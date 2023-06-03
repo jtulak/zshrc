@@ -19,8 +19,9 @@ fi
 # A simple wrapper for source to allow optional config files
 function source_if_exists()
 {
-    if [ -f "$1" ]; then
-	    source "$1"
+    local filename="${MAIN_ZSH}/$1"
+    if [[ -f "$filename" ]]; then
+	    source "$filename"
     fi
 }
 

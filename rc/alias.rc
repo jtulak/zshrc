@@ -3,7 +3,6 @@
 # ZSH configuration
 # Jan Tulak <jan@tulak.me>
 
-
 if [[ $platform == "linux" ]]; then
   #alias ls="ls --color=auto" # maybe done by oh my zsh?
   alias mvim="gvim"
@@ -15,7 +14,7 @@ if [[ $platform == "linux" ]]; then
   }
 
 elif [[ $platform == "osx" ]]; then
-  unalias ls
+  #unalias ls
   alias gvim="mvim"
 
   function brew_find_pkg {
