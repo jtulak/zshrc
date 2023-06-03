@@ -1,0 +1,26 @@
+#!/bin/zsh
+
+# ZSH configuration
+# Jan Tulak <jan@tulak.me>
+
+# share macOS clipboard with tmux and use default system shell in tmux
+#set-option -g default-command "reattach-to-user-namespace -l ${SHELL}"
+
+
+set -o notify
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# Autoload zsh add-zsh-hook and vcs_info functions (-U autoload w/o substition, -z use zsh style)
+autoload -Uz add-zsh-hook vcs_info
+
+# Enable substitution in the prompt.
+setopt prompt_subst
+
+# Run vcs_info just before a prompt is displayed (precmd)
+add-zsh-hook precmd vcs_info

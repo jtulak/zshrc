@@ -1,0 +1,70 @@
+#!/bin/zsh
+
+# ZSH configuration
+# Jan Tulak <jan@tulak.me>
+
+
+if [[ $platform == "linux" ]]; then
+  #alias ls="ls --color=auto" # maybe done by oh my zsh?
+  alias mvim="gvim"
+  #alias dd="dd status=progress"
+
+  # hack for screen when sudo su-ing
+  function screen() {
+    /usr/bin/script -q -c "/usr/bin/screen ${*}" /dev/null
+  }
+
+elif [[ $platform == "osx" ]]; then
+  unalias ls
+  alias gvim="mvim"
+
+  function brew_find_pkg {
+    file_to_search="$@"
+    list_of_brew_pkgs=$(brew list)
+
+    for package in $list_of_brew_pkgs; do
+        brew ls $package | grep -E -q "/${file_to_search}$"
+        if [ $? -eq 0 ]; then
+            echo $package
+            break
+        fi
+    done
+  }
+
+fi
+
+alias ll="ls -lah"
+alias rm="rm -i"
+alias cp="cp -i"
+alias l="ls -ail"
+alias cl="clear"
+alias ga="git add"
+alias gu="git add -u"
+#alias gc="git commit --signoff"
+alias gc="git commit"
+alias gch="git checkout"
+alias gf="git fetch"
+alias gs="git status"
+alias gp="git push"
+alias gr="git rebase"
+alias reboot="shutdown -r now"
+alias ssh-agent-autoload='eval "$(ssh-agent -s)" && ssh-add'
+alias vim="vim -p" # open with tabs
+alias cvs="cvs -z3"
+alias ta="tmux new-session -A -s" # Attach to a tmux session. If it doesn't exist, create a new one.
+
+function gl() {
+	if [[ $# -gt 0 ]]; then
+		# append arguments
+		git log --pretty=format:'%h%d %s [%an]' --decorate --graph --color=always $@ | ~/.bash/git-log-color.awk | less -RXFS
+	else
+		# no arguments
+		git log --pretty=format:'%h%d %s [%an]' --decorate --all --graph --color=always| ~/.bash/git-log-color.awk | less -RXFS
+	fi
+}
+
+function lsdir() {
+	du -h --max-depth=1 $1 | sort -h
+}
+
+
