@@ -47,17 +47,24 @@ done
 PR_NO_COLOUR="%{$terminfo[sgr0]%}"
 
 # Modify Git prompt
-ZSH_THEME_GIT_PROMPT_PREFIX=" on %{$fg[green]%}"
-ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_PREFIX=" [%{$fg[green]%}"
+ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%}]"
+ZSH_THEME_GIT_PROMPT_REMOTE_STATUS_PREFIX="["
+ZSH_THEME_GIT_PROMPT_REMOTE_STATUS_SUFFIX="]"
 ZSH_THEME_GIT_PROMPT_DIRTY=""
 ZSH_THEME_GIT_PROMPT_CLEAN=""
 
 ZSH_THEME_GIT_PROMPT_ADDED="%{$fg[green]%} %{%G✚%}"
-ZSH_THEME_GIT_PROMPT_MODIFIED="%{$fg[blue]%} %{%G✹%}"
+ZSH_THEME_GIT_PROMPT_MODIFIED="%{$fg[yellow]%} %{%G✹%}"
 ZSH_THEME_GIT_PROMPT_DELETED="%{$fg[red]%} %{%G✖%}"
 ZSH_THEME_GIT_PROMPT_RENAMED="%{$fg[magenta]%} %{%G➜%}"
 ZSH_THEME_GIT_PROMPT_UNMERGED="%{$fg[yellow]%} %{%G═%}"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[cyan]%} %{%G✭%}"
+ZSH_THEME_GIT_PROMPT_STASHED=" %{%G📦%}"
+ZSH_THEME_GIT_PROMPT_AHEAD_REMOTE="%{$fg[green]%}%{%G↑%}"
+ZSH_THEME_GIT_PROMPT_BEHIND_REMOTE="%{$fg[red]%}%{%G↓%}"
+ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE="%{$fg[red]%}%{%G↯%}"
+ZSH_THEME_GIT_PROMPT_REMOTE_STATUS_DETAILED="yes"
 
 # Use extended characters to look nicer if supported.
 if [[ "${langinfo[CODESET]}" = UTF-8 ]]; then
@@ -111,7 +118,7 @@ ${PR_GREY})${PR_CYAN}${PR_HBAR}${PR_URCORNER}\
 
 ${PR_CYAN}${PR_LLCORNER}${PR_BLUE}${PR_HBAR}(\
 ${PR_YELLOW}%D{%H:%M:%S}\
-${PR_LIGHT_BLUE}%{$reset_color%}$(git_prompt_info)$(git_prompt_status)${PR_BLUE})${PR_CYAN}${PR_HBAR}\
+${PR_LIGHT_BLUE}%{$reset_color%}$(git_prompt_info)$(git_remote_status)$(git_prompt_status)${PR_BLUE})${PR_CYAN}${PR_HBAR}\
 ${PR_HBAR}\
 >${PR_NO_COLOUR} '
 
