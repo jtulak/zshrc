@@ -235,16 +235,26 @@ prompt_virtualenv() {
 
 # Status:
 # - was there an error
-# - am I root
 # - are there background jobs?
 prompt_status() {
   local -a symbols
 
-  [[ $RETVAL -ne 0 ]] && symbols+="%{%F{red}%}✘"
-  [[ $UID -eq 0 ]] && symbols+="%{%F{yellow}%}⚡"
+  [[ $RETVAL -ne 0 ]] && symbols+="%{%F{red}%}✘$RETVAL"
   [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙"
 
   [[ -n "$symbols" ]] && prompt_segment black default "$symbols"
+}
+
+# Status:
+# - was there an error
+# - am I root
+# - are there background jobs?
+prompt_am_i_root() {
+  local -a symbols
+
+  [[ $UID -eq 0 ]] && symbols+="%{%F{yellow}%}root"
+
+  [[ -n "$symbols" ]] && prompt_segment red default "$symbols"
 }
 
 #AWS Profile:
@@ -260,10 +270,19 @@ prompt_aws() {
   esac
 }
 
+# Time of the prompt render
+prompt_time()
+{
+  local time=
+  prompt_segment black default "%D{%H:%M:%S}"
+}
+
 ## Main prompt
 build_prompt() {
   RETVAL=$?
   prompt_status
+  prompt_am_i_root
+  prompt_time
   prompt_virtualenv
   prompt_aws
   prompt_context
