@@ -32,7 +32,7 @@ DEFAULT_USER=jtulak
 
 # Path to your oh-my-zsh installation.
 export MAIN_ZSH="$HOME/.zsh"
-export ZSH="$MAIN_ZSH/oh-my-zsh"
+export ZSH="$MAIN_ZSH/dependencies/oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,

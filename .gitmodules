@@ -1,11 +1,11 @@
 [submodule "oh-my-zsh"]
-	path = oh-my-zsh
+	path = dependencies/oh-my-zsh
 	url = ./oh-my-zsh
 [submodule "powerline-fonts"]
-	path = powerline-fonts
+	path = dependencies/powerline-fonts
 	url = https://github.com/powerline/fonts.git
 [submodule "solarized"]
-	path = solarized
+	path = dependencies/solarized
 	url = https://github.com/altercation/solarized.git
 [submodule "oh-my-zsh-custom/plugins/zsh-256color"]
 	path = oh-my-zsh-custom/plugins/zsh-256color
