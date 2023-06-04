@@ -267,11 +267,19 @@ prompt_virtualenv() {
 # - are there background jobs?
 prompt_status() {
   local -a symbols
+  local delimiter
 
   [[ $RETVAL -ne 0 ]] && symbols+="%{%F{red}%}✘$RETVAL"
   [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙"
 
-  [[ -n "$symbols" ]] && prompt_segment black default "$symbols"
+  local status_result private_status_file
+  private_status_file="$MAIN_ZSH/private/agnoster_private_status.zsh"
+  if [[ -f "$private_status_file" ]]; then
+    status_result=$($private_status_file)
+  fi
+
+  [[  -n "$symbols" &&  -n "$status_result" ]] && delimiter=" "
+  [[ -n "$symbols" ||  -n "$status_result" ]] && prompt_segment 235 white "$symbols$delimiter$status_result"
 }
 
 # Status:
@@ -335,7 +343,7 @@ build_prompt() {
   prompt_time # must be first, or we won't be able to overwrite it in preexec
   prompt_status
   prompt_am_i_root
-  prompt_private_status
+  #prompt_private_status
   prompt_virtualenv
   prompt_aws
   prompt_context
