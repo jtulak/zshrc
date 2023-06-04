@@ -145,3 +145,4 @@ source_if_exists "private/alias.rc"
 
 source_if_exists "rc/prompt.rc"
 source_if_exists "private/prompt.rc"
+source_if_exists "private/last.rc"
