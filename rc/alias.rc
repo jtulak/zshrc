@@ -67,3 +67,15 @@ function lsdir() {
 }
 
 
+function is_host_reachable() {
+    local result=0xff
+    ping ${1} -t 1 -c 1 -q &> /dev/null;result=$?
+    if [ ${result} -eq 0 ]; then
+        echo -e "${Light_green_apple}${1} is reachable"
+    else
+        echo -e "${Light_red_apple}${1} is unreachable"
+    fi
+    echo -e "${White_apple}"
+   
+    return $result
+}
