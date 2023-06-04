@@ -8,8 +8,9 @@ Installation
 ------------
 There are some dependencies, all are packed in, but need to be installed:
  
- - powerline fonts (`cd powerline-fonts; ./install.sh`)
- - solarized color theme for terminal - just a soft dependency, iterm2 already has it as a built-in optino
+ - powerline fonts (`cd /dependencies/powerline-fonts; ./install.sh`)
+ - solarized color theme for terminal - just a soft dependency, iterm2 already has it as a built-in option
+    - I have included `/custom_solarized.itermcolors` color theme for Iterm2 to make Solarized a bit more contrasting.
 
  To use this config, install the dependencies and then:
  
