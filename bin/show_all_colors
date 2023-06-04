@@ -2,6 +2,8 @@
 autoload colors
 colors
 
+echo "$fg_bold[white]numbered colors, may require zsh-256color plugin:$fg_no_bold[default]"
+
 for row in {1..25}; do
     for column in {0..10}; do
         color=$((25*column + row ))
@@ -11,6 +13,38 @@ for row in {1..25}; do
         colorStr=$(printf '%-3s' "$color")
         print -rPn "%K{$color}   ${colorStr}   %k "
     done
-    print "" # newline
+    print
 done
+
+echo 
+echo
+
+echo 
+echo "$fg_bold[white]named colors and their highlights:$fg_no_bold[default]"
+for color in default black red green yellow blue magenta cyan white; do
+    echo -n "$bg[$color] ${color} $bg[default] "
+done
+echo
+for color in default black red green yellow blue magenta cyan white; do
+    echo -n "$fg[$color] ${color} $fg[default] "
+done
+echo
+for color in default black red green yellow blue magenta cyan white; do
+    echo -n "$fg_bold[$color] ${color} $fg_no_bold[default] "
+done
+echo
+echo
+
+echo "$fg_bold[white]Use colors in zsh scripts:$fg_no_bold[default]"
+print -rP "#!/bin/zsh"
+print -rP "autoload colors"
+print -rP "colors"
+print -rP "print -rP \"%%K{\$bgcolor}%%F{\$fgcolor} colorized %%f%%k\""
+print -rP "echo \"\$fg_bold[\$c1]\$bg[\$c2] colorized \$bg[default]\$fg_no_bold[default]\""
+
+echo
+
+
+
+
 
