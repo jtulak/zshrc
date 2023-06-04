@@ -1,0 +1,14 @@
+#!/bin/zsh
+autoload colors
+colors
+
+file_to_search="$@"
+list_of_brew_pkgs=$(brew list)
+
+for package in $list_of_brew_pkgs; do
+    brew ls $package | grep -E -q "/${file_to_search}$"
+    if [ $? -eq 0 ]; then
+        echo $package
+        break
+    fi
+done

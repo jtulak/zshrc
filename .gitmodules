@@ -7,3 +7,6 @@
 [submodule "solarized"]
 	path = solarized
 	url = https://github.com/altercation/solarized.git
+[submodule "oh-my-zsh-custom/plugins/zsh-256color"]
+	path = oh-my-zsh-custom/plugins/zsh-256color
+	url = https://github.com/chrissicool/zsh-256color

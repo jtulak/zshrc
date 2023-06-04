@@ -1,0 +1,16 @@
+#!/bin/zsh
+autoload colors
+colors
+
+for row in {1..25}; do
+    for column in {0..10}; do
+        color=$((25*column + row ))
+        if [[ "$color" -gt 255 ]]; then
+            break
+        fi
+        colorStr=$(printf '%-3s' "$color")
+        print -rPn "%K{$color}   ${colorStr}   %k "
+    done
+    print "" # newline
+done
+

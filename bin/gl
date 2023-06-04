@@ -1,0 +1,11 @@
+#!/bin/zsh
+autoload colors
+colors
+
+if [[ $# -gt 0 ]]; then
+    # append arguments
+    git log --pretty=format:'%h%d %s [%an]' --decorate --graph --color=always $@ | ~/.bash/git-log-color.awk | less -RXFS
+else
+    # no arguments
+    git log --pretty=format:'%h%d %s [%an]' --decorate --all --graph --color=always| ~/.bash/git-log-color.awk | less -RXFS
+fi

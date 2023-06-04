@@ -317,12 +317,25 @@ prompt_time()
   #prompt_segment white default "%D{%H:%M:%S}$duration_str"
 }
 
+prompt_private_status()
+{
+  local status_result private_status_file
+  private_status_file="$MAIN_ZSH/private/agnoster_private_status.zsh"
+  if [[ -f "$private_status_file" ]]; then
+    status_result=$($private_status_file)
+  fi
+  if [[ -n "$status_result" ]]; then
+    prompt_segment 235 white "$status_result"
+  fi
+}
+
 ## Main prompt
 build_prompt() {
   RETVAL=$?
   prompt_time # must be first, or we won't be able to overwrite it in preexec
   prompt_status
   prompt_am_i_root
+  prompt_private_status
   prompt_virtualenv
   prompt_aws
   prompt_context

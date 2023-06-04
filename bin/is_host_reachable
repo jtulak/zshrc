@@ -1,0 +1,14 @@
+#!/bin/zsh
+autoload colors
+colors
+
+local result=0xff
+ping ${1} -t 1 -c 1 -q &> /dev/null; result=$?
+if [ ${result} -eq 0 ]; then
+    echo -e "$fg_bold[green]$bg[default]${1} is reachable"
+else
+    echo -e "$fg_bold[red]$bg[default]${1} is unreachable"
+fi
+echo -e "$fg_no_bold[default]$bg[default]"
+
+return $result

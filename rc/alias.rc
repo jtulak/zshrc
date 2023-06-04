@@ -16,20 +16,6 @@ if [[ $platform == "linux" ]]; then
 elif [[ $platform == "osx" ]]; then
   #unalias ls
   alias gvim="mvim"
-
-  function brew_find_pkg {
-    file_to_search="$@"
-    list_of_brew_pkgs=$(brew list)
-
-    for package in $list_of_brew_pkgs; do
-        brew ls $package | grep -E -q "/${file_to_search}$"
-        if [ $? -eq 0 ]; then
-            echo $package
-            break
-        fi
-    done
-  }
-
 fi
 
 alias ll="ls -lah"
@@ -51,31 +37,9 @@ alias ssh-agent-autoload='eval "$(ssh-agent -s)" && ssh-add'
 alias vim="vim -p" # open with tabs
 alias cvs="cvs -z3"
 alias ta="tmux new-session -A -s" # Attach to a tmux session. If it doesn't exist, create a new one.
+alias lsdir="du -h --max-depth=1 $1 | sort -h"
 
-function gl() {
-	if [[ $# -gt 0 ]]; then
-		# append arguments
-		git log --pretty=format:'%h%d %s [%an]' --decorate --graph --color=always $@ | ~/.bash/git-log-color.awk | less -RXFS
-	else
-		# no arguments
-		git log --pretty=format:'%h%d %s [%an]' --decorate --all --graph --color=always| ~/.bash/git-log-color.awk | less -RXFS
-	fi
-}
-
-function lsdir() {
-	du -h --max-depth=1 $1 | sort -h
-}
-
-
-function is_host_reachable() {
-    local result=0xff
-    ping ${1} -t 1 -c 1 -q &> /dev/null;result=$?
-    if [ ${result} -eq 0 ]; then
-        echo -e "${Light_green_apple}${1} is reachable"
-    else
-        echo -e "${Light_red_apple}${1} is unreachable"
-    fi
-    echo -e "${White_apple}"
-   
-    return $result
-}
+# get back the bash-style 'help <command>'
+unalias run-help
+autoload run-help
+alias help=run-help
