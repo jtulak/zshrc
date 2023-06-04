@@ -39,6 +39,9 @@ case ${SOLARIZED_THEME:-dark} in
     *)     CURRENT_FG='black';;
 esac
 
+# How many seconds can a comand run before we show its duration in the prompt
+MAX_DURATION_SECONDS_BEFORE_PROMPT_STATUS=5
+
 # Special Powerline characters
 
 () {
@@ -54,6 +57,32 @@ esac
   # escape sequence with a single literal character.
   # Do not change this! Do not make it '\u2b80'; that is the old, wrong code point.
   SEGMENT_SEPARATOR=$'\ue0b0'
+}
+
+# print current time in seconds
+current_time()
+{
+  date +%s
+}
+
+# variable to track the runtime of the last command
+ZSH_AGNOSTER_PREEXEC_TIMER=$(current_time)
+# A lock file to ensure that we count the duration of the last command just once.
+# This is a little hack, because while we can set variables in preexec(),
+# we cannot really change them once inside of prompt rendering. So we cannot stop the counting
+# once triggered - the scope will just mask any change, and the next prompt will still see the
+# the timer running. 
+# The only way I found is to have an externality, like a tempfile.
+ZSH_AGNOSTER_PREEXEC_TIMER_LOCK=$(mktemp /tmp/compare.XXXXXX)
+
+# run just before the next command is run
+preexec() {
+  # save the current time
+  ZSH_AGNOSTER_PREEXEC_TIMER=$(current_time)
+  # overwrite the prompt time with current one
+  current_formatted_time=$(date +"%H:%M:%S")
+  echo -e "\033[1A\033[0C$bg[black]${current_formatted_time}"
+  touch $ZSH_AGNOSTER_PREEXEC_TIMER_LOCK
 }
 
 # Begin a segment
@@ -117,7 +146,7 @@ prompt_git() {
     fi
 
     local ahead behind
-    ahead=$(git log --oneline @{upstream}.. 2>/dev/null | wc -l | xargs)
+    ahead=$(git log --oneline @{upstream}.. 2>/dev/null | wc -l | xargs) # xargs is used to trim all whitespaces
     behind=$(git log --oneline ..@{upstream} 2>/dev/null | wc -l | xargs)
     if [[ "$ahead" -ne 0 ]] && [[ "$behind" -ne 0 ]]; then
       #PL_BRANCH_CHAR=$'\u21c5'
@@ -273,16 +302,27 @@ prompt_aws() {
 # Time of the prompt render
 prompt_time()
 {
-  local time=
-  prompt_segment black default "%D{%H:%M:%S}"
+  local duration_str duration
+
+  if [[ -f "$ZSH_AGNOSTER_PREEXEC_TIMER_LOCK" ]]; then
+    duration=$(($(current_time) - $ZSH_AGNOSTER_PREEXEC_TIMER))
+    if [[ $duration -gt $MAX_DURATION_SECONDS_BEFORE_PROMPT_STATUS ]]; then
+      duration_str=" (${duration}s)"
+    fi
+
+    rm $ZSH_AGNOSTER_PREEXEC_TIMER_LOCK
+  fi
+
+  prompt_segment black default "%D{%H:%M:%S}$duration_str"
+  #prompt_segment white default "%D{%H:%M:%S}$duration_str"
 }
 
 ## Main prompt
 build_prompt() {
   RETVAL=$?
+  prompt_time # must be first, or we won't be able to overwrite it in preexec
   prompt_status
   prompt_am_i_root
-  prompt_time
   prompt_virtualenv
   prompt_aws
   prompt_context
