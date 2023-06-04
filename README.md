@@ -28,10 +28,14 @@ How it differs from a plain oh-my-zsh + Agnoster
 - slightly modified git status, to be more verbose about local/remote differences
 - easily extendable status segment
     - create `/private/agnoster_private_status.zsh` and everything that this script prints out will be added to the dark segment right after time
-- bundled 
+- useful scripts
+    - `show_all_colors` will print a table of available colors, so you can use it to tune the colors to your taste
+    - `is_host_reachable` checks with ping the availability of a hostname, prints it out nicely and returns an appropriate exit code
+    - `gl` is an `git log` wrapper
+    - Aliases are in `/rc/alias.rc`
 
 
-Directories and files
+Directories and paths
 ---------------------
 All settings put into `/private/` directory are ignored by git and can be used stuff that should not be published, be it passwords (plaintext is bad) or proprietary stuff. `/private/private.rc` file is sourced automatically, so you can link everything from it.
 
