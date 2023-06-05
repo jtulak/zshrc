@@ -42,6 +42,6 @@ All settings put into `/private/` directory are ignored by git and can be used s
 
 The directories `/bin/` and `/private/bin/` are included in `$PATH`.
 
-You can use a shared global `.gitconfig` if you link it with `/rc/gitconfig` (I suggest using include, not a symlink here - just like the private config is included) and it will be extended with `/private/gitconfig`
+You can use a shared global `.gitconfig` if you link it with `/rc/gitconfig` (I suggest using include, not a symlink here - just like the private config is included) and it will be extended with `/private/gitconfig`. However, note that these included configs are NOT set/shown for `--global` git flag. Only the very first file in the chain is considered so. 
 
 In general, if a file has `.rc` suffix, it's intended to be sourced. If `.zsh` or something else, it's runnable file or some other config.
