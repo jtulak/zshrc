@@ -12,12 +12,20 @@ There are some dependencies, all are packed in, but need to be installed:
  - solarized color theme for terminal - just a soft dependency, iterm2 already has it as a built-in option
     - I have included `/custom_solarized.itermcolors` color theme for Iterm2 to make Solarized a bit more contrasting.
 
- To use this config, install the dependencies and then:
+To use this config, run
+```
+git clone git@github.com:jtulak/zshrc.git $HOME/.zsh
+$HOME/.zsh/install.sh
+```
+
+Alternatively, you can do the steps manually:
  
 ```
 git clone git@github.com:jtulak/zshrc.git $HOME/.zsh
-mv .zshrc .zshrc.backup
+$HOME/.zsh/dependencies/powerline-fonts/install.sh
+mv $HOME/.zshrc $HOME/.zshrc.backup
 ln -s $HOME/.zsh/zshrc $HOME/.zshrc
+chsh /bin/zsh
 ```
 
 Description
