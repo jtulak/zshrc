@@ -1,15 +1,6 @@
 # ZSH configuration
 # Jan Tulak <jan@tulak.me>
 
-# Are we in a Mac or a Linux machine
-platform='unknown'
-unamestr=`uname`
-if [[ "$unamestr" == 'Linux' ]]; then
-   platform='linux'
-elif [[ "$unamestr" == 'Darwin' ]]; then
-   platform='osx'
-fi
-
 # verify if this shell is interactive or not
 INTERACTIVE="yes"
 if [ -z "$PS1" ]; then 

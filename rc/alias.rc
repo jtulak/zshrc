@@ -3,18 +3,15 @@
 # ZSH configuration
 # Jan Tulak <jan@tulak.me>
 
-if [[ $platform == "linux" ]]; then
-  #alias ls="ls --color=auto" # maybe done by oh my zsh?
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   alias mvim="gvim"
-  #alias dd="dd status=progress"
 
   # hack for screen when sudo su-ing
   function screen() {
     /usr/bin/script -q -c "/usr/bin/screen ${*}" /dev/null
   }
 
-elif [[ $platform == "osx" ]]; then
-  #unalias ls
+elif [[ "$OSTYPE" == "darwin"* ]]; then
   alias gvim="mvim"
 fi
 
