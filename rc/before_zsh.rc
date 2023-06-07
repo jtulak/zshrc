@@ -1,0 +1,9 @@
+#!/bin/zsh
+
+# This file is loaded BEFORE oh-my-zsh, and can be used to conditionally modify some options
+
+# Colors for username@hostname segment. This segment is hidden for default user (DEFAULT_USER in zshrc).
+# You can put this into an if-then and have different colors for different hosts. You can also set a custom string
+PROMPT_CONTEXT_FG_COLOR=default
+PROMPT_CONTEXT_BG_COLOR=black
+# PROMPT_CONTEXT_STRING="%n@%m"

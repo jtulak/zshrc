@@ -104,6 +104,9 @@ ZSH_CUSTOM="$MAIN_ZSH/oh-my-zsh-custom"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(macos dotenv zsh-256color)
 
+source_if_exists "rc/before_zsh.rc"
+source_if_exists "private/before_zsh.rc"
+
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
@@ -137,6 +140,5 @@ source $ZSH/oh-my-zsh.sh
 source_if_exists "rc/options.rc"
 source_if_exists "rc/env.rc"
 source_if_exists "rc/alias.rc"
-source_if_exists "rc/prompt.rc"
 
 source_if_exists "private/private.rc"
