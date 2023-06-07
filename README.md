@@ -17,10 +17,10 @@ To use this config, run
 git clone git@github.com:jtulak/zshrc.git $HOME/.zsh
 $HOME/.zsh/install.sh
 ```
+When you have it installed locally, you run a simplified installation for root user as well with: `sudo ./install_for_root.sh`. However, this takes some shortcuts, because it assumes you are going to use root only through `sudo` and so it skips the fonts. If you log in to root directly, you might need to do a full installation.
 
-Alternatively, you can do the steps manually:
- 
-```
+Alternatively, you can run the installation manually:
+ ```
 git clone git@github.com:jtulak/zshrc.git $HOME/.zsh
 $HOME/.zsh/dependencies/powerline-fonts/install.sh
 mv $HOME/.zshrc $HOME/.zshrc.backup

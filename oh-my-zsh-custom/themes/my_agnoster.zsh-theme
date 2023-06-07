@@ -39,6 +39,9 @@ case ${SOLARIZED_THEME:-dark} in
     *)     CURRENT_FG='black';;
 esac
 
+ROOT_STATUS_FG=yellow
+ROOT_STATUS_BG=red
+
 # How many seconds can a comand run before we show its duration in the prompt
 MAX_DURATION_SECONDS_BEFORE_PROMPT_STATUS=5
 
@@ -122,6 +125,10 @@ prompt_context() {
   [[ -z $PROMPT_CONTEXT_BG_COLOR ]] && PROMPT_CONTEXT_BG_COLOR=black
   [[ -z $PROMPT_CONTEXT_STRING ]] && PROMPT_CONTEXT_STRING="%n@%m"
 
+  if [[ $UID -eq 0 ]]; then
+    PROMPT_CONTEXT_FG_COLOR=$ROOT_STATUS_FG
+    PROMPT_CONTEXT_BG_COLOR=$ROOT_STATUS_BG
+  fi
 
   if [[ "$USERNAME" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
     prompt_segment $PROMPT_CONTEXT_BG_COLOR $PROMPT_CONTEXT_FG_COLOR $PROMPT_CONTEXT_STRING
@@ -284,6 +291,7 @@ prompt_status() {
 
   [[ $RETVAL -ne 0 ]] && symbols+="%{%F{red}%}✘$RETVAL"
   [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙"
+  [[ $UID -eq 0 ]] && symbols+="%{%F{yellow}%}\U26A1"
 
   local status_result private_status_file
   private_status_file="$MAIN_ZSH/private/agnoster_private_status.zsh"
@@ -293,18 +301,6 @@ prompt_status() {
 
   [[  -n "$symbols" &&  -n "$status_result" ]] && delimiter=" "
   [[ -n "$symbols" ||  -n "$status_result" ]] && prompt_segment 235 white "$symbols$delimiter$status_result"
-}
-
-# Status:
-# - was there an error
-# - am I root
-# - are there background jobs?
-prompt_am_i_root() {
-  local -a symbols
-
-  [[ $UID -eq 0 ]] && symbols+="%{%F{yellow}%}root"
-
-  [[ -n "$symbols" ]] && prompt_segment red default "$symbols"
 }
 
 #AWS Profile:
@@ -335,28 +331,14 @@ prompt_time()
   fi
 
   prompt_segment black default "%D{%H:%M:%S}$duration_str"
-  #prompt_segment white default "%D{%H:%M:%S}$duration_str"
 }
 
-prompt_private_status()
-{
-  local status_result private_status_file
-  private_status_file="$MAIN_ZSH/private/agnoster_private_status.zsh"
-  if [[ -f "$private_status_file" ]]; then
-    status_result=$($private_status_file)
-  fi
-  if [[ -n "$status_result" ]]; then
-    prompt_segment 235 white "$status_result"
-  fi
-}
 
 ## Main prompt
 build_prompt() {
   RETVAL=$?
   prompt_time # must be first, or we won't be able to overwrite it in preexec
   prompt_status
-  prompt_am_i_root
-  #prompt_private_status
   prompt_virtualenv
   prompt_aws
   prompt_context

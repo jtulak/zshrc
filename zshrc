@@ -25,7 +25,8 @@ function source_if_exists()
     fi
 }
 
-DEFAULT_USER=jtulak
+# You can edit this in private/before_zsh.rc too
+DEFAULT_USER=None
 
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH

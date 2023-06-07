@@ -5,7 +5,8 @@ set -Eeu -o pipefail
 
 print_help()
 {
-    echo "$0 [--dry-run]"
+    script=$(basename $0)
+    echo "$script [--dry-run]"
 }
 
 # print the command to be run and execute it (unless we are in dry run)
