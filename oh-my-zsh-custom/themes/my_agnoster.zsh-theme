@@ -117,8 +117,14 @@ prompt_end() {
 
 # Context: user@hostname (who am I and where am I)
 prompt_context() {
+  # you can declare those in before_zsh.rc
+  [[ -z $PROMPT_CONTEXT_FG_COLOR ]] && PROMPT_CONTEXT_FG_COLOR=default
+  [[ -z $PROMPT_CONTEXT_BG_COLOR ]] && PROMPT_CONTEXT_BG_COLOR=black
+  [[ -z $PROMPT_CONTEXT_STRING ]] && PROMPT_CONTEXT_STRING="%n@%m"
+
+
   if [[ "$USERNAME" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
-    prompt_segment black default "%(!.%{%F{yellow}%}.)%n@%m"
+    prompt_segment $PROMPT_CONTEXT_BG_COLOR $PROMPT_CONTEXT_FG_COLOR $PROMPT_CONTEXT_STRING
   fi
 }
 
@@ -252,6 +258,13 @@ prompt_hg() {
 
 # Dir: current working directory
 prompt_dir() {
+  #local color_background=blue
+  #local color_foreground=$CURRENT_FG
+  #if [[ "$USERNAME" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
+  #  color_background='blue'
+  #  color_foreground='default'
+  #fi
+  #prompt_segment $color_background $color_foreground '%~'
   prompt_segment blue $CURRENT_FG '%~'
 }
 
