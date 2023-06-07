@@ -50,7 +50,7 @@ How it differs from a plain oh-my-zsh + Agnoster
 
 Directories and paths
 ---------------------
-All settings put into `/private/` directory are ignored by git and can be used stuff that should not be published, be it passwords (plaintext is bad) or proprietary stuff. `/private/private.rc` file is sourced automatically, so you can link everything from it.
+All settings put into `/private/` directory are ignored by git and can be used stuff that should not be published, be it passwords (plaintext is bad, use system wallets) or proprietary stuff. `/private/private.rc` file is sourced automatically, so you can link everything from it.
 
 The directories `/bin/` and `/private/bin/` are included in `$PATH`.
 
