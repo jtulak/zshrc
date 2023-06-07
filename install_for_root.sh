@@ -53,7 +53,7 @@ if [[ ! -f "$SOURCE_ZSH/.installed" ]]; then
     exit 0
 fi
 
-run rsync -a $SOURCE_ZSH $ROOT_HOME/
+run rsync -a -delete $SOURCE_ZSH $ROOT_HOME/
 [[ -f "$ROOT_HOME/.zshrc" ]] && mv $ROOT_HOME/.zshrc $ROOT_HOME/.zshrc.backup
 chown -R root:wheel $ROOT_HOME/.zsh
 ln -s $ROOT_HOME/.zsh/zshrc $ROOT_HOME/.zshrc  
