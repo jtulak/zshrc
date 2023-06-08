@@ -278,7 +278,9 @@ prompt_dir() {
 # Virtualenv: current working virtualenv
 prompt_virtualenv() {
   if [[ -n "$VIRTUAL_ENV" && -n "$VIRTUAL_ENV_DISABLE_PROMPT" ]]; then
-    prompt_segment blue black "(${VIRTUAL_ENV:t:gs/%/%%})"
+    #venv_name=$VIRTUAL_ENV
+    venv_name="venv"
+    prompt_segment 235 default "(${venv_name:t:gs/%/%%})"
   fi
 }
 

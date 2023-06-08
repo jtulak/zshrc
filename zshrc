@@ -94,7 +94,7 @@ ZSH_CUSTOM="$MAIN_ZSH/oh-my-zsh-custom"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(macos dotenv zsh-256color)
+plugins=(macos dotenv zsh-256color autoswitch_virtualenv)
 
 source_if_exists "rc/before_zsh.rc"
 source_if_exists "private/before_zsh.rc"
