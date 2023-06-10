@@ -38,6 +38,8 @@ Post-install
 ------------
 After you installed the configs, you should change at least `DEFAULT_USER` in `zshrc` to the user for which you want to hide `user@hostname` part of the prompt. If you want to have different colors for different hosts/users, use `before_zsh.rc` file (either in `/rc` or in `/private`) to set `PROMPT_CONTEXT_FG_COLOR` and `PROMPT_CONTEXT_BG_COLOR`.
 
+If you want to use Python 3 virtual environments, install `virtualenv` and `mkvenv` packages (e.g. through pip), and, if you don't have `python` executable in your `PATH` (like if you are on a Mac), put `export AUTOSWITCH_DEFAULT_PYTHON="/usr/bin/python3"` into `/private/before_zsh.rc`.
+
 Description
 ------------
 How it differs from a plain oh-my-zsh + Agnoster
