@@ -57,5 +57,15 @@ run rsync -a -delete $SOURCE_ZSH $ROOT_HOME/
 [[ -f "$ROOT_HOME/.zshrc" ]] && mv $ROOT_HOME/.zshrc $ROOT_HOME/.zshrc.backup
 chown -R root:wheel $ROOT_HOME/.zsh
 ln -s $ROOT_HOME/.zsh/zshrc $ROOT_HOME/.zshrc  
+
+
+echo "Installing tmux.conf"
+if [[ -f  "$HOME/.tmux.conf" ]]; then
+    echo ".tmux.conf already exists. Add the content manually from ~/.zsh/tmux.conf"
+else
+    ln -s "$HOME/.zsh/tmux.conf" "$HOME/.tmux.conf"
+fi
+echo
+
 chsh -s /bin/zsh
 

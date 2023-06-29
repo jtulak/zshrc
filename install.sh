@@ -83,12 +83,20 @@ echo
 # install gitconfig
 echo "Install gitconfig..."
 if [[ -f  "$HOME/.gitconfig" ]]; then
-    echo ".gitconfig already ignores, skipping..."
+    echo ".gitconfig already exists, skipping..."
     echo "If you want to use the bundled one, add this to your gitconfig:"
     echo "[include]"
 	echo "path = ~/.zsh/rc/gitconfig"
 else
     run eval 'echo -e "[include]\npath = ~/.zsh/rc/gitconfig" > "$HOME/.gitconfig"'
+fi
+echo
+
+echo "Installing tmux.conf"
+if [[ -f  "$HOME/.tmux.conf" ]]; then
+    echo ".tmux.conf already exists. Add the content manually from ~/.zsh/tmux.conf"
+else
+    run ln -s "$HOME/.zsh/tmux.conf" "$HOME/.tmux.conf"
 fi
 echo
 
