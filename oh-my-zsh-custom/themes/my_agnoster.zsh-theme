@@ -181,7 +181,7 @@ prompt_git() {
     local stashed_prompt stashed_number
     stashed_number=$(command git stash list 2>/dev/null | wc -l | tr -d ' ')
     if [[ "${stashed_number}" -gt 0 ]]; then
-      stashed_prompt="\u2b13"
+      stashed_prompt=" \u2b13"
     fi
 
     setopt promptsubst
