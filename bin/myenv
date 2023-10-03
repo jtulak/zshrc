@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+
+import argparse
+import subprocess
+import sys
+import random
+import string
+import os
+from datetime import datetime
+
+SHELL_IN_SSH_COMMANDS="/bin/bash"
+
+## general tools
+def get_random_tmp_dirname(prefix: str):
+    # choose from all lowercase letter
+    length = 10
+    letters = string.ascii_lowercase
+    random_str = ''.join(random.choice(letters) for i in range(length))
+    time = datetime.now().strftime('%m-%d_%H-%M-%S')
+    return f"/tmp/{prefix}_{time}_{random_str}"
+
+# open ssh connection, execute just one command, and log out and return the stdout
+def run_ssh_command(hostname: str, command: str, printout: bool = False) -> tuple[int, str]:
+    sshProcess = subprocess.Popen(['ssh', '-q', 
+                               hostname,  command],
+                               stdin = None, 
+                               stdout = subprocess.PIPE,
+                               universal_newlines=True,
+                               bufsize=0)
+
+    output=str()
+    for line in  sshProcess.stdout: 
+        output += line
+
+    if printout:
+        print(output)
+
+    return (sshProcess.returncode, output)
+        
+## ZSH config tools
+def is_zsh_installed(hostname:str) -> bool:
+    is_installed = run_ssh_command(hostname, "[[ -f .zsh/.installed ]] && echo ZSH_INSTALLED || echo NOT_INSTALLED", printout=True)
+    return is_installed[1].count("ZSH_INSTALLED") > 0
+
+def block_profiled_local_include(hostname:str):
+    # this is a hack for 
+    run_ssh_command(hostname, "sudo sed -i '1s#shopt -s nullglob#[[ $SHELL = '/bin/zsh' ]] \&\& return\\nshopt -s nullglob#' /etc/profile.d/local-include.sh", printout=True)
+
+## ZSH config methods
+def install(hostname: str, reinstall=False):
+
+    # check if the host already is installed
+    if is_zsh_installed(hostname):
+        if not reinstall:
+            print("zsh is already installed and configured")
+            return
+        else:
+            print("found installed zsh, reinstalling...")
+    
+    # install
+    # zsh itself
+    print("This might take a while...")
+    run_ssh_command(hostname, "sudo yum -y install zsh", printout=True)
+
+    # now copy zshrc
+    print("copy zshrc...")
+    block_profiled_local_include(hostname)
+    zsh_dir = os.path.join(os.path.expanduser('~'), '.zsh')
+    command = ["rsync", "-a", "--delete", zsh_dir, f"{hostname}:~/"]
+    result: subprocess.CompletedProcess = subprocess.run(command,
+                                            capture_output=False, 
+                                            check=False)
+    if result.returncode != 0:
+        print("return code was: " + str(result.returncode))
+        return result.returncode
+    run_ssh_command(hostname, "rm ~/.zsh/.installed; rm ~/.zsh/.installed_fonts");
+    
+
+    # remove the installed checks we have from the source location, and install it
+    print("activate it...")
+    result = run_ssh_command(hostname, "~/.zsh/install.sh", printout=True)
+    if result[0] == 0 or result[0] is None:
+        print("\nDone.")
+    else:
+        print("\nerror: " + str(result[0]))
+    return result[0]
+
+
+def update(hostname: str):
+    # check if the host already is installed
+    if not is_zsh_installed(hostname):
+        print("zsh is missing")
+        return
+    # now copy zshrc
+    print("copy zshrc...")
+    zsh_dir = os.path.join(os.path.expanduser('~'), '.zsh')
+    command = ["rsync", "-a", "--delete", zsh_dir, f"{hostname}:~/"]
+    result: subprocess.CompletedProcess = subprocess.run(command,
+                                            capture_output=False, 
+                                            check=False)
+    if result.returncode != 0:
+        print("return code was: " + str(result.returncode))
+        return result.returncode
+    else:
+        print("\nDone.")
+    return result.returncode
+
+## General methods
+def ssh(hostname: str, ports: list[tuple[str, str]]):
+    command = ["ssh", hostname]
+    result: subprocess.CompletedProcess = subprocess.run(command, capture_output=False, check=False)
+
+    if result.returncode != 0:
+        print("return code was: " + str(result.returncode))
+        print("TODO: if this was a timeout, can I use it to auto-reconnect?")
+    
+def main():
+    OPERATIONS=["install", "reinstall", "update", "ssh"]
+
+    parser = argparse.ArgumentParser(
+                        prog='myenv',
+                        description='Control my environment for other machines',
+                        epilog='',
+                        formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('hostname', type=str)
+    parser.add_argument('operation', type=str, help="""\
+    - install - Copy zsh config and so on.
+    - reinstall - Copy zsh config and so on even if it exists.
+    - update - Copy only zsh config, do not try to install deps.
+    - ssh - Connect with ssh and.
+    """, choices=OPERATIONS)
+    args = parser.parse_args()
+    hostname: str = args.hostname
+    operation: str = args.operation
+
+    match operation:
+        case 'install':
+            install(hostname)
+        case 'reinstall':
+            install(hostname, reinstall=True)
+        case 'update':
+            update(hostname)
+        case 'ssh':
+            ssh(hostname, ports=[])
+        case _:
+            print("invalid operation")
+            sys.exit(1)
+
+if __name__ == "__main__":
+    main()
