@@ -21,29 +21,29 @@ def get_random_tmp_dirname(prefix: str):
 
 # open ssh connection, execute just one command, and log out and return the stdout
 def run_ssh_command(hostname: str, command: str, printout: bool = False) -> tuple[int, str]:
-    sshProcess = subprocess.Popen(['ssh', '-q', 
+    sshProcess = subprocess.Popen(['ssh', '-q',
                                hostname,  command],
-                               stdin = None, 
+                               stdin = None,
                                stdout = subprocess.PIPE,
                                universal_newlines=True,
                                bufsize=0)
 
     output=str()
-    for line in  sshProcess.stdout: 
+    for line in  sshProcess.stdout:
         output += line
 
     if printout:
         print(output)
 
     return (sshProcess.returncode, output)
-        
+
 ## ZSH config tools
 def is_zsh_installed(hostname:str) -> bool:
     is_installed = run_ssh_command(hostname, "[[ -f .zsh/.installed ]] && echo ZSH_INSTALLED || echo NOT_INSTALLED", printout=True)
     return is_installed[1].count("ZSH_INSTALLED") > 0
 
 def block_profiled_local_include(hostname:str):
-    # this is a hack for 
+    # this is a hack for
     run_ssh_command(hostname, "sudo sed -i '1s#shopt -s nullglob#[[ $SHELL = '/bin/zsh' ]] \&\& return\\nshopt -s nullglob#' /etc/profile.d/local-include.sh", printout=True)
 
 ## ZSH config methods
@@ -56,11 +56,11 @@ def install(hostname: str, reinstall=False):
             return
         else:
             print("found installed zsh, reinstalling...")
-    
+
     # install
     # zsh itself
     print("This might take a while...")
-    run_ssh_command(hostname, "sudo yum -y install zsh", printout=True)
+    run_ssh_command(hostname, "sudo yum -y install zsh || (echo yum not found, trying apt.; sudo apt-get --assume-yes install zsh)", printout=True)
 
     # now copy zshrc
     print("copy zshrc...")
@@ -68,13 +68,13 @@ def install(hostname: str, reinstall=False):
     zsh_dir = os.path.join(os.path.expanduser('~'), '.zsh')
     command = ["rsync", "-a", "--delete", zsh_dir, f"{hostname}:~/"]
     result: subprocess.CompletedProcess = subprocess.run(command,
-                                            capture_output=False, 
+                                            capture_output=False,
                                             check=False)
     if result.returncode != 0:
         print("return code was: " + str(result.returncode))
         return result.returncode
     run_ssh_command(hostname, "rm ~/.zsh/.installed; rm ~/.zsh/.installed_fonts");
-    
+
 
     # remove the installed checks we have from the source location, and install it
     print("activate it...")
@@ -96,7 +96,7 @@ def update(hostname: str):
     zsh_dir = os.path.join(os.path.expanduser('~'), '.zsh')
     command = ["rsync", "-a", "--delete", zsh_dir, f"{hostname}:~/"]
     result: subprocess.CompletedProcess = subprocess.run(command,
-                                            capture_output=False, 
+                                            capture_output=False,
                                             check=False)
     if result.returncode != 0:
         print("return code was: " + str(result.returncode))
@@ -113,7 +113,7 @@ def ssh(hostname: str, ports: list[tuple[str, str]]):
     if result.returncode != 0:
         print("return code was: " + str(result.returncode))
         print("TODO: if this was a timeout, can I use it to auto-reconnect?")
-    
+
 def main():
     OPERATIONS=["install", "reinstall", "update", "ssh"]
 
