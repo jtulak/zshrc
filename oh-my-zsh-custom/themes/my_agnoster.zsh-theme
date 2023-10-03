@@ -184,6 +184,13 @@ prompt_git() {
       stashed_prompt=" \u2b13"
     fi
 
+    local new_files_prompt
+    if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && \
+        git status --porcelain | grep '??' &> /dev/null ; then
+        new_files_prompt=" ?"
+    fi
+
+
     setopt promptsubst
     autoload -Uz vcs_info
 
@@ -196,7 +203,7 @@ prompt_git() {
     zstyle ':vcs_info:*' actionformats ' %u%c'
 
     vcs_info
-    echo -n "${${ref:gs/%/%%}/refs\/heads\//$PL_BRANCH_CHAR }${vcs_info_msg_0_%% }${stashed_prompt}${mode}"
+    echo -n "${${ref:gs/%/%%}/refs\/heads\//$PL_BRANCH_CHAR }${vcs_info_msg_0_%% }${stashed_prompt}${new_files_prompt}${mode}"
   fi
 }
 
