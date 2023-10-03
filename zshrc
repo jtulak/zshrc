@@ -3,7 +3,7 @@
 
 # verify if this shell is interactive or not
 INTERACTIVE="yes"
-if [ -z "$PS1" ]; then 
+if [ -z "$PS1" ]; then
     INTERACTIVE="no"
 fi
 
@@ -89,12 +89,16 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Would you like to use another custom folder than $ZSH/custom?
 ZSH_CUSTOM="$MAIN_ZSH/oh-my-zsh-custom"
 
+# make ssh-agent lazy, because we do not want to be asked for a password on shell start
+zstyle :omz:plugins:ssh-agent lazy yes
+
+
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(macos dotenv zsh-256color autoswitch_virtualenv)
+plugins=(macos dotenv zsh-256color autoswitch_virtualenv ssh-agent)
 
 source_if_exists "rc/before_zsh.rc"
 source_if_exists "private/before_zsh.rc"
