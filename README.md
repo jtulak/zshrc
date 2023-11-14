@@ -12,15 +12,10 @@ There are some dependencies, all are packed in, but need to be installed:
  - solarized color theme for terminal - just a soft, nice looking dependency, iterm2 already has it as a built-in option
     - I have included `/custom_solarized.itermcolors` color theme for Iterm2. It's based on solarized, but I keep tweaking it and it slowly drifts away from the original theme.
 
-There are some additional plugins for oh-my-zsh. To download them when you clone this repo, run:
-```
-git submodule update --init --recursive
-```
-
 
 To use this config, run
 ```
-git clone git@github.com:jtulak/zshrc.git $HOME/.zsh
+git clone --recurse-submodules git@github.com:jtulak/zshrc.git $HOME/.zsh
 $HOME/.zsh/install.sh
 ```
 When you have it installed locally, you run a simplified installation for root user as well with: `sudo ./install_for_root.sh`. However, this takes some shortcuts, because it assumes you are going to use root only through `sudo` and so it skips the fonts. If you log in to root directly, you might need to do a full installation.
