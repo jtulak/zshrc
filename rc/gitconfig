@@ -4,6 +4,6 @@
 	helper = cache --timeout=28800
 [core]
 	excludesfile = ~/.gitignore_global
-	pager = less -x1,5
+	pager = less -x1,5 -F --no-init
 [push]
 	autoSetupRemote = true
