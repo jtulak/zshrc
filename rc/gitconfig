@@ -7,3 +7,5 @@
 	pager = less -x1,5 -F --no-init
 [push]
 	autoSetupRemote = true
+[core]
+	editor = vim
