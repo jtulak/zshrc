@@ -98,7 +98,7 @@ zstyle :omz:plugins:ssh-agent lazy yes
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(macos dotenv zsh-256color autoswitch_virtualenv ssh-agent)
+plugins=(macos dotenv zsh-256color autoswitch_virtualenv ssh-agent iterm2)
 
 source_if_exists "rc/before_zsh.rc"
 source_if_exists "private/before_zsh.rc"
