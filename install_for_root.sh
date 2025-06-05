@@ -33,7 +33,7 @@ ROOT_HOME=$(echo ~root)
 
 if [[ "$#" -ne 0 ]]; then
     if [[ "$1" = "--dry-run" ]]; then
-        DRY_RUN="true"
+        DRY_RUN="--dry-run"
     elif [[ "$1" = "-h"  || "$1" = "--help" ]]; then
         print_help
         exit 0
@@ -48,6 +48,11 @@ if [[ $UID -ne 0 ]]; then
     exit 1
 fi
 
+./ansible_install.sh localhost $DRY_RUN -u root
+
+exit 0
+
+# old code
 if [[ ! -f "$SOURCE_ZSH/.installed" ]]; then
     echo "You have to install this zsh config for your normal user"
     exit 0

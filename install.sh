@@ -1,6 +1,9 @@
 #!/bin/bash
 set -Eeu -o pipefail
 
+echo "use install_ansible.sh instead"
+exit 0
+
 # install this zsh config package for the local user
 
 print_help()
