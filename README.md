@@ -16,9 +16,9 @@ There are some dependencies, all are packed in, but need to be installed:
 To use this config, run
 ```
 git clone --recurse-submodules git@github.com:jtulak/zshrc.git $HOME/.zsh
-$HOME/.zsh/install.sh
+$HOME/.zsh/install_ansible.sh localhost
 ```
-When you have it installed locally, you run a simplified installation for root user as well with: `sudo ./install_for_root.sh`. However, this takes some shortcuts, because it assumes you are going to use root only through `sudo` and so it skips the fonts. If you log in to root directly, you might need to do a full installation.
+When you have it installed locally, you can run a simplified installation for root user as well with: `sudo ./install_for_root.sh`. 
 
 Alternatively, you can run the installation manually:
  ```
