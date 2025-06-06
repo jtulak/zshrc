@@ -1,0 +1,65 @@
+---
+
+# 7) Backup any existing ~/.zshrc (if it’s not already a symlink), then create the symlink
+- name: Stat ~/.zshrc on remote
+  stat:
+    path: "{{ home }}/.zshrc"
+  register: zshrc_stat
+
+- name: Backup existing ~/.zshrc to ~/.zshrc.backup (if it exists and isn’t a symlink)
+  command:
+    cmd: mv "{{ home }}/.zshrc" "{{ home }}/.zshrc.backup"
+  when:
+    - zshrc_stat.stat.exists
+    - not zshrc_stat.stat.islnk
+
+- name: Symlink ~/.zshrc → ~/.zsh/zshrc
+  file:
+    src: "{{ zsh_dir }}/zshrc"
+    dest: "{{ home }}/.zshrc"
+    state: link
+    force: true
+
+# 8) If ~/.gitconfig already exists, just print guidance; otherwise create one that includes yours
+- name: Stat ~/.gitconfig on remote
+  stat:
+    path: "{{ home }}/.gitconfig"
+  register: gitconfig_stat
+
+- name: Inform about existing ~/.gitconfig
+  debug:
+    msg: |
+      .gitconfig already exists, skipping...
+      If you want to use the bundled one, add this to your gitconfig:
+      [include]
+      path = ~/.zsh/rc/gitconfig
+  when: gitconfig_stat.stat.exists
+
+- name: Create ~/.gitconfig with include stanza if missing
+  copy:
+    dest: "{{ home }}/.gitconfig"
+    content: |
+      [include]
+      path = ~/.zsh/rc/gitconfig
+    mode: '0644'
+    owner: "{{ ansible_user_id }}"
+  when: not gitconfig_stat.stat.exists
+
+# 9) If ~/.tmux.conf already exists, print guidance; otherwise symlink to ~/.zsh/tmux.conf
+- name: Stat ~/.tmux.conf on remote
+  stat:
+    path: "{{ home }}/.tmux.conf"
+  register: tmux_stat
+
+- name: Inform about existing ~/.tmux.conf
+  debug:
+    msg: ".tmux.conf already exists. Add the content manually from ~/.zsh/tmux.conf"
+  when: tmux_stat.stat.exists
+
+- name: Symlink ~/.tmux.conf → ~/.zsh/tmux.conf
+  file:
+    src: "{{ zsh_dir }}/tmux.conf"
+    dest: "{{ home }}/.tmux.conf"
+    state: link
+    force: true
+  when: not tmux_stat.stat.exists

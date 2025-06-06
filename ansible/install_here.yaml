@@ -1,0 +1,23 @@
+---
+# pip install "ansible<2.14" 
+# We have to use old ansible because OL7 support - no dnf, only python 2 and 3.6, ...
+- hosts: all
+  gather_facts: true
+
+  vars:
+    home: "{{ ansible_env.HOME }}"
+    zsh_dir: "{{ home }}/.zsh"
+    zsh_bin: "/bin/zsh"
+    ansible_pkg_mgr: yum
+
+  tasks:
+
+    - name: “Install  deps”
+      import_tasks: shared/11_install_deps.yaml
+
+    - name: “setup dotfiles”
+      import_tasks: shared/20_setup_dotfiles.yaml
+
+    - name: “Default shell”
+      import_tasks: shared/30_default_shell.yaml
+

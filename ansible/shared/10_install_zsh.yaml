@@ -1,0 +1,7 @@
+---
+
+- name: Ensure zsh is installed
+  become: true
+  package:
+    name: zsh
+    state: present
