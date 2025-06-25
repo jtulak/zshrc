@@ -10,9 +10,12 @@ fi
 # A simple wrapper for source to allow optional config files
 function source_if_exists()
 {
+    local origpath="$1"
     local filename="${MAIN_ZSH}/$1"
     if [[ -f "$filename" ]]; then
 	    source "$filename"
+    elif [[ -f "$origpath" ]]; then
+	    source "$origpath"
     fi
 }
 
