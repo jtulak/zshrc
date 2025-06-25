@@ -134,6 +134,7 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+# dummy ns_tooling_completion.zsh to fool one tool doing grep
 
 # source local configs
 source_if_exists "rc/options.rc"
