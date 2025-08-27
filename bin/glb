@@ -1,2 +1,8 @@
 #!/bin/bash
-gl --first-parent HEAD
+
+if [ "$#" -eq 0 ]; then
+	gl --first-parent HEAD
+else
+	gl --first-parent "$1"
+fi
+
