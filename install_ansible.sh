@@ -7,10 +7,13 @@ set -Eeu -o pipefail
 #   --dry-run        (long flag, no argument)
 #   --config FILE    (long with required argument)
 #   --user | -u USER
+#   --legacy         (use legacy ansible for OL7)
+#   --copy-private   (force copy ~/.zsh/private)
 
-SHORT_OPTS="hu:"
-LONG_OPTS="help,dry-run,config:,user:"
+SHORT_OPTS="hu:l"
+LONG_OPTS="help,dry-run,config:,user:,legacy,copy-private"
 
+set -x
 
 # Detect macOS and ensure GNU getopt is installed
 if [[ "$(uname)" == "Darwin" ]]; then
@@ -61,6 +64,8 @@ DRY_RUN=0
 ZSH_HOME="$HOME/.zsh"
 CONFIG_FILE=""
 USER=""
+USE_LEGACY=0
+COPY_PRIVATE=0
 
 # Process all flags until “--” (end of options)
 while true; do
@@ -90,6 +95,14 @@ while true; do
             fi
             shift 2
             ;;
+        -l|--legacy)
+            USE_LEGACY=1
+            shift
+            ;;
+        --copy-private)
+            COPY_PRIVATE=1
+            shift
+            ;;
         --)
             # End of option parsing
             shift
@@ -115,6 +128,8 @@ Options:
       --dry-run        do a trial run without making any changes
       --config FILE    read settings from FILE instead of the default
       --user -u USER   run as USER
+      --legacy         use legacy ansible for OL7
+      --copy-private   force copy ~/.zsh/private
 EOF
     exit 0
 fi
@@ -133,21 +148,41 @@ echo "HOSTNAME    = $HOSTNAME"
 echo "DRY_RUN     = $DRY_RUN"
 echo "CONFIG_FILE = $CONFIG_FILE"
 echo "USER        = $USER"
+echo "LEGACY      = $USE_LEGACY"
+echo "COPY_PRIVATE= $COPY_PRIVATE"
 
-# install ansible if not present
-which ansible-playbook &>/dev/null
-if [ $? -eq 1 ]; then
-	echo "Ansible is missing, trying to install"
-	pip install "ansible<2.14"
+ANSIBLE_VENV_ROOT="$ZSH_HOME/.venv"
+ANSIBLE_VENV="$ANSIBLE_VENV_ROOT/ansible-modern"
+ANSIBLE_SPEC="ansible"
+ANSIBLE_PY_INTERP="/usr/bin/python3"
+if [[ $USE_LEGACY -eq 1 ]]; then
+    ANSIBLE_VENV="$ANSIBLE_VENV_ROOT/ansible-legacy"
+    ANSIBLE_SPEC="ansible<2.14"
+    ANSIBLE_PY_INTERP="/usr/bin/python"
+fi
+
+ANSIBLE_PLAYBOOK="$ANSIBLE_VENV/bin/ansible-playbook"
+ANSIBLE_PIP="$ANSIBLE_VENV/bin/pip"
+if [[ ! -x "$ANSIBLE_PLAYBOOK" ]]; then
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "Error: python3 is required to create an ansible venv." >&2
+        exit 1
+    fi
+    echo "Installing Ansible into $ANSIBLE_VENV ($ANSIBLE_SPEC)"
+    mkdir -p "$ANSIBLE_VENV_ROOT"
+    python3 -m venv "$ANSIBLE_VENV"
+    "$ANSIBLE_PIP" install --upgrade pip
+    "$ANSIBLE_PIP" install --use-pep517 "$ANSIBLE_SPEC"
 fi
 
 
 CONFIG_FILE_DEFAULT="$ZSH_HOME/ansible/copy_elsewhere.yaml"
-OPTIONS=""
+declare -a OPTIONS=()
 if [[ "$HOSTNAME" = "localhost" ]];then
-    OPTIONS+=" -c local -K "
+    OPTIONS+=(-c local)
     CONFIG_FILE_DEFAULT="$ZSH_HOME/ansible/install_here.yaml"
 fi
+OPTIONS+=(-K)
 
 if [[ "$CONFIG_FILE" = "" ]]; then
     CONFIG_FILE="$CONFIG_FILE_DEFAULT"
@@ -166,15 +201,24 @@ if [[ "$USER" != "" ]]; then
     HOSTNAME="$USER@$HOSTNAME"
 fi
 
+declare -a EXTRA_VARS=(-e "ansible_python_interpreter=$ANSIBLE_PY_INTERP")
+if [[ $COPY_PRIVATE -eq 1 ]]; then
+    EXTRA_VARS+=(-e "zsh_copy_private=true")
+fi
 if [[ $DRY_RUN -eq 1 ]]; then
     echo "Running in dry-run mode"
-	ansible-playbook $OPTIONS \
-		-i "$HOSTNAME," \
-		"$CONFIG_FILE" \
-		--check
+    CMD=("$ANSIBLE_PLAYBOOK")
+    if (( ${#OPTIONS[@]} )); then
+        CMD+=("${OPTIONS[@]}")
+    fi
+    CMD+=(-i "$HOSTNAME," "$CONFIG_FILE" "${EXTRA_VARS[@]}" --check)
+	"${CMD[@]}"
 else
     echo "Performing real changes on ${HOSTNAME}"
-	ansible-playbook $OPTIONS \
-		-i "$HOSTNAME," \
-		"$CONFIG_FILE" 
+    CMD=("$ANSIBLE_PLAYBOOK")
+    if (( ${#OPTIONS[@]} )); then
+        CMD+=("${OPTIONS[@]}")
+    fi
+    CMD+=(-i "$HOSTNAME," "$CONFIG_FILE" "${EXTRA_VARS[@]}")
+	"${CMD[@]}"
 fi

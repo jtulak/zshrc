@@ -37,6 +37,6 @@ alias ta="tmux new-session -A -s" # Attach to a tmux session. If it doesn't exis
 alias lsdir="du -h --max-depth=1 $1 | sort -h"
 
 # get back the bash-style 'help <command>'
-unalias run-help
-autoload run-help
+unalias run-help 2>/dev/null
+autoload run-help 2>/dev/null
 alias help=run-help

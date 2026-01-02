@@ -95,6 +95,8 @@ ZSH_CUSTOM="$MAIN_ZSH/oh-my-zsh-custom"
 # make ssh-agent lazy, because we do not want to be asked for a password on shell start
 zstyle :omz:plugins:ssh-agent lazy yes
 
+source_if_exists "rc/before_zsh.rc"
+source_if_exists "private/before_zsh.rc"
 
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
@@ -102,9 +104,6 @@ zstyle :omz:plugins:ssh-agent lazy yes
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(macos dotenv zsh-256color autoswitch_virtualenv ssh-agent iterm2 pyenv)
-
-source_if_exists "rc/before_zsh.rc"
-source_if_exists "private/before_zsh.rc"
 
 source $ZSH/oh-my-zsh.sh
 
