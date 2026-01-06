@@ -1,0 +1,36 @@
+---
+- name: "Set font_dir for macOS"
+  set_fact:
+    font_dir: "{{ home }}/Library/Fonts"
+  when: ansible_system == "Darwin"
+
+- name: "Set font_dir for Linux"
+  set_fact:
+    font_dir: "{{ home }}/.local/share/fonts"
+  when: ansible_system == "Linux"
+
+- name: Stat font directory
+  stat:
+    path: "{{ font_dir }}"
+  register: fontdir_stat
+
+- name: Find existing Powerline fonts
+  find:
+    paths: "{{ font_dir }}"
+    patterns: "*Powerline*"
+    recurse: no
+  register: powerline_fonts
+  when: fontdir_stat.stat.exists and fontdir_stat.stat.isdir
+
+# Run powerline-fonts installer if either:
+#      a) font_dir doesn’t exist, or
+#      b) font_dir exists but no “Powerline” files were found
+- name: Run powerline-fonts install script
+  become: false
+  shell: "./install.sh"
+  args:
+    chdir: "{{ zsh_dir }}/dependencies/powerline-fonts"
+  when: >
+    (not (fontdir_stat.stat.exists and fontdir_stat.stat.isdir))
+    or
+    (fontdir_stat.stat.exists and fontdir_stat.stat.isdir and powerline_fonts.matched == 0)

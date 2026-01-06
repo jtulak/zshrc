@@ -1,0 +1,43 @@
+---
+- name: Ensure rsync is installed
+  become: true
+  package:
+    name: rsync
+    state: present
+
+- name: Ensure libdnf5 python bindings are present (Fedora)
+  become: true
+  raw: dnf -y install python3-libdnf5
+  when: ansible_facts.distribution == "Fedora"
+
+- name: Install pyenv build dependencies (Debian)
+  become: true
+  apt:
+    name:
+      - build-essential
+      - curl
+      - git
+      - libbz2-dev
+      - libffi-dev
+      - liblzma-dev
+      - libncursesw5-dev
+      - libreadline-dev
+      - libsqlite3-dev
+      - libssl-dev
+      - libxml2-dev
+      - libxmlsec1-dev
+      - tk-dev
+      - xz-utils
+      - zlib1g-dev
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Install pyenv (Debian)
+  become: false
+  git:
+    repo: https://github.com/pyenv/pyenv.git
+    dest: "{{ home }}/.pyenv"
+    version: master
+    update: true
+  when: ansible_os_family == "Debian"

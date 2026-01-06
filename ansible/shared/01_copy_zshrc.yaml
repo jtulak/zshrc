@@ -1,0 +1,23 @@
+---
+
+- name: Check if remote private dir exists
+  stat:
+    path: "{{ zsh_dir }}/private"
+  register: zsh_private_stat
+
+- name: Build rsync options
+  set_fact:
+    zsh_rsync_opts: >-
+      {{
+        ['--archive', '--delete']
+        + (((zsh_private_stat.stat.isdir | default(false)) and not (zsh_copy_private | default(false) | bool))
+          | ternary(['--exclude=private/'], []))
+      }}
+
+- name: "Synchronize local ~/.zsh/ into {{ inventory_hostname }}:~/.zsh/"
+  synchronize:
+    src: "{{ lookup('env','HOME') }}/.zsh/"
+    dest: "{{ zsh_dir }}/"
+    rsync_opts: "{{ zsh_rsync_opts }}"
+  delegate_to: localhost
+  #when: ansible_connection != "local"
