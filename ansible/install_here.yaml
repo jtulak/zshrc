@@ -10,9 +10,11 @@
     ansible_python_interpreter: /usr/bin/python3
 
   tasks:
+    - name: “Ensure prerequisites”
+      import_tasks: shared/00_ensure_prerequisities.yaml
 
     - name: “Install  deps”
-      import_tasks: shared/11_install_deps.yaml
+      import_tasks: shared/11_install_bundled_deps.yaml
 
     - name: “setup dotfiles”
       import_tasks: shared/20_setup_dotfiles.yaml

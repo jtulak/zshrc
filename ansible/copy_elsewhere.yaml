@@ -10,20 +10,17 @@
     ansible_python_interpreter: /usr/bin/python3
 
   tasks:
-    - name: Ensure libdnf5 python bindings are present (Fedora)
-      become: true
-      raw: dnf -y install python3-libdnf5
-      when: ansible_facts.distribution == "Fedora"
+    - name: “Ensure prerequisites”
+      import_tasks: shared/00_ensure_prerequisities.yaml
 
     - name: “Copy ZSH”
-      import_tasks: shared/00_copy_zshrc.yaml
+      import_tasks: shared/01_copy_zshrc.yaml
 
     - name: “Install ZSH”
       import_tasks: shared/10_install_zsh.yaml
 
     - name: “Install  deps”
-      import_tasks: shared/11_install_deps.yaml
-
+      import_tasks: shared/11_install_bundled_deps.yaml
 
     - name: “setup dotfiles”
       import_tasks: shared/20_setup_dotfiles.yaml
