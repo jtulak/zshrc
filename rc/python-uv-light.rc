@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+# Minimal UV legacy-notice hook
+# - Only checks the CURRENT directory on chpwd
+# - If requirements.txt exists and pyproject.toml does not, prints a brief hint
+# - No activation/creation logic here; see rc/python-uv.rc for auto-venv
+
+__uv_light_notice_on_chpwd() {
+  emulate -L zsh
+  local dir="$PWD"
+  if [[ -f "$dir/requirements.txt" && ! -f "$dir/pyproject.toml" ]]; then
+    echo "$fg_bold[magenta][python-uv]$fg_no_bold[default] $fg[magenta]Found legacy Python project: requirements.txt but no pyproject.toml$fg[default]"
+    echo "$fg_bold[magenta][python-uv]$fg_no_bold[default] $fg[magenta]Convert with: uv init && uv add -r requirements.txt$fg[default]"
+  fi
+}
+
+autoload -U add-zsh-hook
+add-zsh-hook chpwd __uv_light_notice_on_chpwd

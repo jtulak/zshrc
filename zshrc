@@ -103,7 +103,7 @@ source_if_exists "private/before_zsh.rc"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(macos dotenv zsh-256color autoswitch_virtualenv ssh-agent iterm2 pyenv)
+plugins=(macos dotenv zsh-256color ssh-agent iterm2 uv)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -139,5 +139,5 @@ source $ZSH/oh-my-zsh.sh
 source_if_exists "rc/options.rc"
 source_if_exists "rc/env.rc"
 source_if_exists "rc/alias.rc"
-
+source_if_exists "rc/python-uv-light.rc"
 source_if_exists "private/private.rc"
