@@ -151,29 +151,35 @@ echo "USER        = $USER"
 echo "LEGACY      = $USE_LEGACY"
 echo "COPY_PRIVATE= $COPY_PRIVATE"
 
-ANSIBLE_VENV_ROOT="$ZSH_HOME/.venv"
-ANSIBLE_VENV="$ANSIBLE_VENV_ROOT/ansible-modern"
-ANSIBLE_SPEC="ansible"
+# Select interpreter for managed hosts (remote python), legacy uses /usr/bin/python
 ANSIBLE_PY_INTERP="/usr/bin/python3"
 if [[ $USE_LEGACY -eq 1 ]]; then
-    ANSIBLE_VENV="$ANSIBLE_VENV_ROOT/ansible-legacy"
-    ANSIBLE_SPEC="ansible<2.14"
     ANSIBLE_PY_INTERP="/usr/bin/python"
 fi
 
-ANSIBLE_PLAYBOOK="$ANSIBLE_VENV/bin/ansible-playbook"
-ANSIBLE_PIP="$ANSIBLE_VENV/bin/pip"
-if [[ ! -x "$ANSIBLE_PLAYBOOK" ]]; then
-    if ! command -v python3 >/dev/null 2>&1; then
-        echo "Error: python3 is required to create an ansible venv." >&2
-        exit 1
+# Ensure uvx (UV runner) is present
+if ! command -v uvx >/dev/null 2>&1; then
+    echo "Error: uvx (UV) is required to run Ansible without a local venv." >&2
+    if [[ "$(uname)" == "Darwin" ]]; then
+        echo "Install UV via Homebrew: brew install uv" >&2
+    else
+        echo "Install UV from https://docs.astral.sh/uv/#installation" >&2
     fi
-    echo "Installing Ansible into $ANSIBLE_VENV ($ANSIBLE_SPEC)"
-    mkdir -p "$ANSIBLE_VENV_ROOT"
-    python3 -m venv "$ANSIBLE_VENV"
-    "$ANSIBLE_PIP" install --upgrade pip
-    "$ANSIBLE_PIP" install --use-pep517 "$ANSIBLE_SPEC"
+    exit 1
 fi
+
+# Determine Ansible package spec (overridable via ANSIBLE_PKG_SPEC)
+if [[ -z "${ANSIBLE_PKG_SPEC:-}" ]]; then
+    if [[ $USE_LEGACY -eq 1 ]]; then
+        ANSIBLE_PKG_SPEC='ansible<2.14'
+    else
+        ANSIBLE_PKG_SPEC='ansible-core'
+    fi
+fi
+
+# Build launcher using uvx ephemeral runner
+# Example: uvx --from ansible-core ansible-playbook ...
+read -r -a ANSIBLE_LAUNCH <<< "uvx --from ${ANSIBLE_PKG_SPEC} ansible-playbook"
 
 
 CONFIG_FILE_DEFAULT="$ZSH_HOME/ansible/copy_elsewhere.yaml"
@@ -207,7 +213,7 @@ if [[ $COPY_PRIVATE -eq 1 ]]; then
 fi
 if [[ $DRY_RUN -eq 1 ]]; then
     echo "Running in dry-run mode"
-    CMD=("$ANSIBLE_PLAYBOOK")
+    CMD=("${ANSIBLE_LAUNCH[@]}")
     if (( ${#OPTIONS[@]} )); then
         CMD+=("${OPTIONS[@]}")
     fi
@@ -215,7 +221,7 @@ if [[ $DRY_RUN -eq 1 ]]; then
 	"${CMD[@]}"
 else
     echo "Performing real changes on ${HOSTNAME}"
-    CMD=("$ANSIBLE_PLAYBOOK")
+    CMD=("${ANSIBLE_LAUNCH[@]}")
     if (( ${#OPTIONS[@]} )); then
         CMD+=("${OPTIONS[@]}")
     fi
