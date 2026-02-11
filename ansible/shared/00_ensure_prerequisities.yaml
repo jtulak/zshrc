@@ -1,9 +1,17 @@
 ---
-- name: Ensure rsync is installed
+- name: Ensure rsync is installed (Linux)
   become: true
-  package:
+  ansible.builtin.package: 
     name: rsync
     state: present
+  when: ansible_system != 'Darwin'
+
+- name: Ensure rsync is installed (macOS)
+  become: false
+  community.general.homebrew: 
+    name: rsync
+    state: present
+  when: ansible_system == 'Darwin'
 
 - name: Ensure libdnf5 python bindings are present (Fedora)
   become: true

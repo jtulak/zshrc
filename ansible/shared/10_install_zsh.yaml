@@ -1,7 +1,14 @@
 ---
-
-- name: Ensure zsh is installed
+- name: Ensure zsh is installed (Linux)
   become: true
-  package:
+  ansible.builtin.package: 
     name: zsh
     state: present
+  when: ansible_system != 'Darwin'
+
+- name: Ensure zsh is installed (macOS)
+  become: false
+  community.general.homebrew: 
+    name: zsh
+    state: present
+  when: ansible_system == 'Darwin'

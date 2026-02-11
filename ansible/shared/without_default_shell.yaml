@@ -1,0 +1,22 @@
+---
+# Use --legacy in install_ansible.sh for OL7, otherwise modern Ansible is used.
+- name: “Ensure prerequisites”
+  import_tasks: 00_ensure_prerequisities.yaml
+
+- name: “Copy ZSH”
+  import_tasks: 01_copy_zshrc.yaml
+  when:
+    # overrides 
+    # Force copy on localhost: add -e zsh_copy_repo=true
+    # Force skip on remote: add -e zsh_copy_repo=false
+    - (zsh_copy_repo | default((ansible_connection | default('ssh')) != 'local')) | bool
+
+- name: “Install ZSH”
+  import_tasks: 10_install_zsh.yaml
+
+- name: “Install  deps”
+  import_tasks: 11_install_bundled_deps.yaml
+
+- name: “setup dotfiles”
+  import_tasks: 20_setup_dotfiles.yaml
+

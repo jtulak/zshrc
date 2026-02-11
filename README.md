@@ -21,7 +21,7 @@ To use this config, run
 git clone --recurse-submodules git@github.com:jtulak/zshrc.git $HOME/.zsh
 $HOME/.zsh/install_ansible.sh localhost
 ```
-When you have it installed locally, you can run a simplified installation for root user as well with: `sudo ./install_for_root.sh`.
+When you have it installed locally, you can run a simplified installation for root user as well with: `./install_for_root.sh`.
 
 Alternatively, you can run the installation manually:
  ```

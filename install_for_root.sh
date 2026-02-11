@@ -26,8 +26,8 @@ get_root_home()
 }
 
 DRY_RUN=''
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-SOURCE_ZSH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 ROOT_HOME=$(echo ~root)
 
 
@@ -45,9 +45,9 @@ fi
 
 if [[ $UID -ne 0 ]]; then
     echo "run as root"
-    exit 1
+    #exit 1
 fi
 
-./ansible_install.sh localhost $DRY_RUN -u root
+$SCRIPT_DIR/install_ansible.sh localhost $DRY_RUN -u root
 
 exit 0

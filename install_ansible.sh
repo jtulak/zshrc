@@ -151,12 +151,6 @@ echo "USER        = $USER"
 echo "LEGACY      = $USE_LEGACY"
 echo "COPY_PRIVATE= $COPY_PRIVATE"
 
-# Select interpreter for managed hosts (remote python), legacy uses /usr/bin/python
-ANSIBLE_PY_INTERP="/usr/bin/python3"
-if [[ $USE_LEGACY -eq 1 ]]; then
-    ANSIBLE_PY_INTERP="/usr/bin/python"
-fi
-
 # Ensure uvx (UV runner) is present
 if ! command -v uvx >/dev/null 2>&1; then
     echo "Error: uvx (UV) is required to run Ansible without a local venv." >&2
@@ -169,11 +163,14 @@ if ! command -v uvx >/dev/null 2>&1; then
 fi
 
 # Determine Ansible package spec (overridable via ANSIBLE_PKG_SPEC)
+# Default package selection: follow UV warning for legacy where ansible-playbook
+# is provided by ansible-base in the 2.10 era. Allow override via ANSIBLE_PKG_SPEC.
 if [[ -z "${ANSIBLE_PKG_SPEC:-}" ]]; then
     if [[ $USE_LEGACY -eq 1 ]]; then
-        ANSIBLE_PKG_SPEC='ansible<2.14'
+        # Use ansible-base for legacy to avoid uvx warning and match where the console script lives.
+        ANSIBLE_PKG_SPEC='ansible==2.10.*'
     else
-        ANSIBLE_PKG_SPEC='ansible-core'
+        ANSIBLE_PKG_SPEC='ansible'
     fi
 fi
 
@@ -182,11 +179,10 @@ fi
 read -r -a ANSIBLE_LAUNCH <<< "uvx --from ${ANSIBLE_PKG_SPEC} ansible-playbook"
 
 
-CONFIG_FILE_DEFAULT="$ZSH_HOME/ansible/copy_elsewhere.yaml"
+CONFIG_FILE_DEFAULT="$ZSH_HOME/ansible/install.yaml"
 declare -a OPTIONS=()
 if [[ "$HOSTNAME" = "localhost" ]];then
     OPTIONS+=(-c local)
-    CONFIG_FILE_DEFAULT="$ZSH_HOME/ansible/install_here.yaml"
 fi
 OPTIONS+=(-K)
 
@@ -207,7 +203,6 @@ if [[ "$USER" != "" ]]; then
     HOSTNAME="$USER@$HOSTNAME"
 fi
 
-declare -a EXTRA_VARS=(-e "ansible_python_interpreter=$ANSIBLE_PY_INTERP")
 if [[ $COPY_PRIVATE -eq 1 ]]; then
     EXTRA_VARS+=(-e "zsh_copy_private=true")
 fi
