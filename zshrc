@@ -2,9 +2,9 @@
 # Jan Tulak <jan@tulak.me>
 
 # verify if this shell is interactive or not
-INTERACTIVE="yes"
-if [ -z "$PS1" ]; then
-    INTERACTIVE="no"
+INTERACTIVE="no"
+if [[ -o interactive ]]; then
+    INTERACTIVE="yes"
 fi
 
 # A simple wrapper for source to allow optional config files

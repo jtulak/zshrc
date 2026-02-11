@@ -80,12 +80,17 @@ ZSH_AGNOSTER_PREEXEC_TIMER_LOCK=$(mktemp /tmp/compare.XXXXXX)
 
 # run just before the next command is run
 preexec() {
+  # run this only in interactive TTY contexts to avoid leaking control sequences
+  if [[ "${INTERACTIVE}" != "yes" || ! -t 1 ]]; then
+    return
+  fi
+
   # save the current time
   ZSH_AGNOSTER_PREEXEC_TIMER=$(current_time)
   # overwrite the prompt time with current one
   current_formatted_time=$(date +"%H:%M:%S")
   echo -e "\033[1A\033[0C$bg[black]${current_formatted_time}"
-  touch $ZSH_AGNOSTER_PREEXEC_TIMER_LOCK
+  touch "$ZSH_AGNOSTER_PREEXEC_TIMER_LOCK"
 }
 
 # Begin a segment
