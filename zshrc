@@ -19,7 +19,8 @@ function source_if_exists()
     fi
 }
 
-# You can edit this in private/before_zsh.rc too
+# You can edit this in private/before_zsh.rc too.
+# The most obvious usefulness is a bright red prompt when you are a root.
 DEFAULT_USER=None
 
 # If you come from bash you might have to change your $PATH.
