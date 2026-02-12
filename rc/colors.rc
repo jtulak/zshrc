@@ -1,0 +1,125 @@
+# Semantic color mapping for custom my_agnoster theme
+#
+# Purpose:
+# - Export COLOR_* variables used by prompt segments, selecting tokens per PROMPT_COLOR_MODE
+#   and respecting SOLARIZED_THEME for sensible defaults.
+# - Safe to source multiple times (idempotent) and produces no output.
+#
+# Inputs (from rc/prompt-capabilities.rc):
+# - PROMPT_COLOR_MODE: one of [truecolor|24|24bit], [256], or [16|8|ansi]. Unrecognized -> 16/8.
+# - SOLARIZED_THEME: 'light' or anything else (treated as dark/other).
+#
+# Token rules for zsh %F/%K:
+# - truecolor: use #rrggbb
+# - 256: use numeric xterm-256 color indexes
+# - 16/8: use ANSI color names
+#
+# Usage examples in themes:
+#   prompt_segment $COLOR_PATH_BG $COLOR_PATH_FG '%~'
+#   prompt_segment $COLOR_STATUS_BG $COLOR_STATUS_FG "$segment_content"
+
+# Select palette per capability
+_mode="${PROMPT_COLOR_MODE}"
+
+# Core Solarized palette tokens (mode-resolved)
+# We keep names aligned to Solarized where applicable.
+c_base03=""; c_base02=""; c_base0=""; c_base1=""; c_base2=""; c_base3=""
+c_yellow=""; c_orange=""; c_red=""; c_magenta=""; c_violet=""; c_blue=""; c_cyan=""; c_green=""
+# Convenience generics (mapped into Solarized-appropriate tokens)
+c_black=""; c_white=""
+
+case "${_mode}" in
+  (truecolor|24|24bit|true)
+    c_base03="#011b21"; c_base02="#073642"; c_base0="#839496"; c_base1="#93a1a1"; c_base2="#eee8d5"; c_base3="#fdf6e3"
+    c_yellow="#d09f04"; c_orange="#cb4b16"; c_red="#dc322f"; c_magenta="#d33682"
+    c_violet="#9e6cc4"; c_blue="#268bd2"; c_cyan="#2aa198"; c_green="#009e09"
+    # Map generics to Solarized-appropriate tones
+    c_black="${c_base03}"    # deep neutral
+    c_white="${c_base2}"     # light neutral
+    ;;
+  (256|xterm-256|ansi256|xterm256)
+    c_base03=234; c_base02=235; c_base0=244; c_base1=245; c_base2=254; c_base3=230
+    c_yellow=178; c_orange=166; c_red=160; c_magenta=125
+    c_violet=134;  c_blue=33;   c_cyan=37;  c_green=34
+    c_black=${c_base03}
+    c_white=${c_base2}
+    ;;
+  (*) # Fallback: 16/8 ANSI approximations
+    # base03/base02 -> black, base2/base3 -> white
+    c_base03="black"; c_base02="black"; c_base0="white"; c_base1="white"; c_base2="white"; c_base3="white"
+    c_yellow="yellow"; c_orange="red"; c_red="red"; c_magenta="magenta"
+    c_violet="magenta"; c_blue="blue"; c_cyan="cyan"; c_green="green"
+    c_black="black"; c_white="white"
+    ;;
+esac
+
+# Provide a sensible default for AGNOSTER_DEFAULT_SEP_FG if unset
+# - white on SOLARIZED_THEME=light, black otherwise
+if [[ -z "${AGNOSTER_DEFAULT_SEP_FG+x}" ]]; then
+  if [[ "${SOLARIZED_THEME}" == "light" ]]; then
+    export AGNOSTER_DEFAULT_SEP_FG="${c_white}"
+  else
+    export AGNOSTER_DEFAULT_SEP_FG="${c_black}"
+  fi
+fi
+
+# Theme-aware grey foreground; falls back to 'default' on 16/8
+if [[ "${SOLARIZED_THEME}" == "light" ]]; then
+  _grey_pref="${c_base1}"
+else
+  _grey_pref="${c_base0}"
+fi
+case "${_mode}" in
+  (truecolor|24|24bit|true|256|xterm-256|ansi256|xterm256)
+    export COLOR_GREY_FG="${_grey_pref}"
+    ;;
+  (*)
+    export COLOR_GREY_FG="default"
+    ;;
+esac
+
+# Export semantic colors for segments used by my_agnoster
+# Time segment
+export COLOR_TIME_BG="${c_black}"      # default background
+export COLOR_TIME_FG="${COLOR_GREY_FG}"      # default foreground
+export COLOR_TIME_SEP_FG="${AGNOSTER_DEFAULT_SEP_FG}"
+
+# Path segment (Solarized blue on default fg)
+export COLOR_PATH_BG="${c_blue}"
+export COLOR_PATH_FG="${c_black}"
+
+# Git segment
+export COLOR_GIT_CLEAN_BG="${c_green}"
+export COLOR_GIT_CLEAN_FG="${c_black}"
+export COLOR_GIT_DIRTY_BG="${c_yellow}"
+export COLOR_GIT_DIRTY_FG="${c_black}"
+
+# Status segment (background block hosting icons)
+export COLOR_STATUS_BG="${c_base02}"  # neutral dark background
+# "white" as a light neutral; map to Solarized base2/base3 equivalents per mode
+export COLOR_STATUS_FG="${c_white}"
+# Icon foregrounds inside status content
+export COLOR_STATUS_ERR_FG="${c_red}"
+export COLOR_STATUS_JOBS_FG="${c_cyan}"
+export COLOR_STATUS_ROOT_FG="${c_yellow}"
+
+# Virtualenv segment
+export COLOR_VENV_BG="${c_base02}"
+export COLOR_VENV_FG="default"
+
+# AWS segment
+export COLOR_AWS_PROD_BG="${c_red}"
+export COLOR_AWS_PROD_FG="${c_yellow}"
+export COLOR_AWS_NONPROD_BG="${c_green}"
+export COLOR_AWS_NONPROD_FG="${c_black}"
+
+# Context (user@host)
+export COLOR_CONTEXT_BG="${c_black}"
+export COLOR_CONTEXT_FG="${COLOR_GREY_FG}"
+export COLOR_CONTEXT_ROOT_BG="${c_red}"
+export COLOR_CONTEXT_ROOT_FG="${c_yellow}"
+
+# Cleanup temporary variables to avoid leaking into the environment
+unset _mode c_base03 c_base02 c_base0 c_base1 c_base2 c_base3 c_yellow c_orange c_red c_magenta c_violet c_blue c_cyan c_green c_black c_white _grey_pref
+
+# End of rc/colors.rc

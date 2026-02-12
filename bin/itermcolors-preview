@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+"""
+Preview colors from an iTerm2 .itermcolors plist:
+- Prints each color as #RRGGBB
+- Renders a color-filled rectangle using ANSI SGR (truecolor or 256-color)
+
+Usage:
+  bin/itermcolors-preview [path/to/file.itermcolors]
+  bin/itermcolors-preview --mode {auto,truecolor,256} --cols 24 custom_solarized.itermcolors
+"""
+from __future__ import annotations
+import argparse
+import os
+import plistlib
+import re
+import sys
+from typing import Dict, Tuple
+
+RGB = Tuple[int, int, int]
+
+
+def load_colors(path: str) -> Dict[str, RGB]:
+    try:
+        with open(path, 'rb') as f:
+            data = plistlib.load(f)
+    except FileNotFoundError:
+        print(f"Error: file not found: {path}", file=sys.stderr)
+        sys.exit(1)
+
+    out: Dict[str, RGB] = {}
+    for k, v in data.items():
+        if isinstance(v, dict):
+            # Typical keys: 'Red Component', 'Green Component', 'Blue Component'
+            r = v.get('Red Component')
+            g = v.get('Green Component')
+            b = v.get('Blue Component')
+            if r is None or g is None or b is None:
+                continue
+            try:
+                ri = int(round(float(r) * 255))
+                gi = int(round(float(g) * 255))
+                bi = int(round(float(b) * 255))
+            except Exception:
+                continue
+            out[k] = (max(0, min(255, ri)), max(0, min(255, gi)), max(0, min(255, bi)))
+    return out
+
+
+def sort_key(name: str):
+    m = re.match(r'^Ansi\s+(\d+)\s+Color$', name)
+    if m:
+        return (0, int(m.group(1)))
+    order = [
+        'Background Color', 'Foreground Color', 'Bold Color',
+        'Cursor Color', 'Cursor Text Color',
+        'Selected Text Color', 'Selection Color', 'Link Color',
+    ]
+    if name in order:
+        return (1, order.index(name))
+    return (2, name.lower())
+
+
+def rgb_to_hex(r: int, g: int, b: int) -> str:
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+
+def detect_mode() -> str:
+    colorterm = os.environ.get('COLORTERM', '').lower()
+    if 'truecolor' in colorterm or '24bit' in colorterm:
+        return 'truecolor'
+    # Fallback: detect 256-color support via tput, else assume truecolor (safe; terminals ignore unknown params)
+    try:
+        import subprocess
+        n = int((subprocess.check_output(['tput', 'colors']) or b'0').strip() or b'0')
+        if n >= 256:
+            return '256'
+    except Exception:
+        pass
+    return 'truecolor'
+
+
+def rgb_to_xterm256(r: int, g: int, b: int) -> int:
+    # Approximate mapping to xterm-256 palette
+    if r == g == b:
+        if r < 8:
+            return 16
+        if r > 248:
+            return 231
+        return int(round(((r - 8) / 247) * 24)) + 232
+
+    def v2i(v: int) -> int:
+        if v < 48:
+            return 0
+        if v < 114:
+            return 1
+        return int((v - 35) / 40)
+
+    ri, gi, bi = v2i(r), v2i(g), v2i(b)
+    return 16 + 36 * ri + 6 * gi + bi
+
+
+def bg_seq(r: int, g: int, b: int, mode: str) -> str:
+    if mode == 'truecolor':
+        return f"\x1b[48;2;{r};{g};{b}m"
+    if mode == '256':
+        idx = rgb_to_xterm256(r, g, b)
+        return f"\x1b[48;5;{idx}m"
+    return ''
+
+
+def reset_seq() -> str:
+    return "\x1b[0m"
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Preview an iTerm2 .itermcolors palette')
+    parser.add_argument('file', nargs='?', default='custom_solarized.itermcolors', help='.itermcolors file to preview')
+    parser.add_argument('--mode', choices=['auto', 'truecolor', '256'], default='auto', help='output mode')
+    parser.add_argument('--cols', type=int, default=24, help='rectangle width (spaces)')
+    args = parser.parse_args()
+
+    mode = detect_mode() if args.mode == 'auto' else args.mode
+    colors = load_colors(args.file)
+
+    print(f"Mode: {mode}    File: {args.file}")
+    for name in sorted(colors.keys(), key=sort_key):
+        r, g, b = colors[name]
+        hexc = rgb_to_hex(r, g, b)
+        bg = bg_seq(r, g, b, mode)
+        rect = ' ' * max(1, args.cols)
+        # Example: "Ansi  1 Color       #dc322f  [████████]"
+        print(f"{name:22} {hexc:8}  {bg}{rect}{reset_seq()}")
+
+
+if __name__ == '__main__':
+    main()

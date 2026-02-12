@@ -34,13 +34,14 @@
 
 CURRENT_BG='DEFAULT'
 
-case ${SOLARIZED_THEME:-dark} in
-    light) CURRENT_FG='white';;
-    *)     CURRENT_FG='black';;
-esac
-
-ROOT_STATUS_FG=yellow
-ROOT_STATUS_BG=red
+# Default separator foreground to use when previous background is 'default'
+# Allow override via environment; choose per Solarized theme if unset.
+if [[ -z "${AGNOSTER_DEFAULT_SEP_FG}" ]]; then
+  case ${SOLARIZED_THEME:-dark} in
+    light) AGNOSTER_DEFAULT_SEP_FG='white' ;;
+    *)     AGNOSTER_DEFAULT_SEP_FG='black' ;;
+  esac
+fi
 
 # How many seconds can a comand run before we show its duration in the prompt
 MAX_DURATION_SECONDS_BEFORE_PROMPT_STATUS=5
@@ -104,12 +105,24 @@ preexec() {
 # Takes two arguments, background and foreground. Both can be omitted,
 # rendering default background/foreground.
 prompt_segment() {
-  local bg fg
+  # Usage: prompt_segment <bg> <fg> <content> [sep_fg]
+  # - bg/fg may be 'default' to use terminal defaults
+  # - sep_fg is used for the triangle separator when previous bg is 'default'
+  local bg fg sep_fg join_fg
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
+  sep_fg="$4"
   if [[ "${POWERLINE_CAPABLE}" == "true" ]]; then
     if [[ $CURRENT_BG != 'DEFAULT' && $1 != $CURRENT_BG ]]; then
-      echo -n " %{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
+      join_fg="$CURRENT_BG"
+      if [[ "$CURRENT_BG" == 'default' || "$CURRENT_BG" == 'DEFAULT' ]]; then
+        if [[ -n "$sep_fg" ]]; then
+          join_fg="$sep_fg"
+        else
+          join_fg="$AGNOSTER_DEFAULT_SEP_FG"
+        fi
+      fi
+      echo -n " %{$bg%F{$join_fg}%}$SEGMENT_SEPARATOR%{$fg%} "
     else
       echo -n "%{$bg%}%{$fg%} "
     fi
@@ -129,16 +142,20 @@ prompt_segment() {
 prompt_end() {
   if [[ "${POWERLINE_CAPABLE}" == "true" ]]; then
     if [[ -n $CURRENT_BG ]]; then
-      echo -n " %{%k%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR"
+      local end_fg="$CURRENT_BG"
+      if [[ "$CURRENT_BG" == 'default' || "$CURRENT_BG" == 'DEFAULT' ]]; then
+        end_fg="$AGNOSTER_DEFAULT_SEP_FG"
+      fi
+      echo -n " %{%k%F{$end_fg}%}$SEGMENT_SEPARATOR"
     else
       echo -n "%{%k%}"
     fi
   else
     # In compat mode, just reset colors; no trailing separator.
-    echo -n "%{%k%}"
+    echo -n " %{%k%}"
   fi
   echo -n "%{%f%}"
-  CURRENT_BG=''
+  CURRENT_BG='DEFAULT'
 }
 
 ### Prompt components
@@ -147,13 +164,13 @@ prompt_end() {
 # Context: user@hostname (who am I and where am I)
 prompt_context() {
   # you can declare those in before_zsh.rc
-  [[ -z $PROMPT_CONTEXT_FG_COLOR ]] && PROMPT_CONTEXT_FG_COLOR=default
-  [[ -z $PROMPT_CONTEXT_BG_COLOR ]] && PROMPT_CONTEXT_BG_COLOR=black
+  [[ -z $PROMPT_CONTEXT_FG_COLOR ]] && PROMPT_CONTEXT_FG_COLOR=$COLOR_CONTEXT_FG
+  [[ -z $PROMPT_CONTEXT_BG_COLOR ]] && PROMPT_CONTEXT_BG_COLOR=$COLOR_CONTEXT_BG
   [[ -z $PROMPT_CONTEXT_STRING ]] && PROMPT_CONTEXT_STRING="%n@%m"
 
   if [[ $UID -eq 0 ]]; then
-    PROMPT_CONTEXT_FG_COLOR=$ROOT_STATUS_FG
-    PROMPT_CONTEXT_BG_COLOR=$ROOT_STATUS_BG
+    PROMPT_CONTEXT_FG_COLOR=$COLOR_CONTEXT_ROOT_FG
+    PROMPT_CONTEXT_BG_COLOR=$COLOR_CONTEXT_ROOT_BG
   fi
 
   if [[ "$USERNAME" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
@@ -183,9 +200,9 @@ prompt_git() {
     dirty=$(parse_git_dirty)
     ref=$(git symbolic-ref HEAD 2> /dev/null) || ref="➦ $(git rev-parse --short HEAD 2> /dev/null)"
     if [[ -n $dirty ]]; then
-      prompt_segment yellow black
+      prompt_segment $COLOR_GIT_DIRTY_BG $COLOR_GIT_DIRTY_FG
     else
-      prompt_segment green $CURRENT_FG
+      prompt_segment $COLOR_GIT_CLEAN_BG $COLOR_GIT_CLEAN_FG
     fi
 
     local ahead behind
@@ -266,12 +283,12 @@ prompt_bzr() {
     status_all=$(echo -n "$bzr_status" | head -n1 | wc -m)
     revision=${$(bzr log -r-1 --log-format line | cut -d: -f1):gs/%/%%}
     if [[ $status_mod -gt 0 ]] ; then
-      prompt_segment yellow black "bzr@$revision ✚"
+      prompt_segment $COLOR_GIT_DIRTY_BG $COLOR_GIT_DIRTY_FG "bzr@$revision ✚"
     else
       if [[ $status_all -gt 0 ]] ; then
-        prompt_segment yellow black "bzr@$revision"
+        prompt_segment $COLOR_GIT_DIRTY_BG $COLOR_GIT_DIRTY_FG "bzr@$revision"
       else
-        prompt_segment green black "bzr@$revision"
+        prompt_segment $COLOR_GIT_CLEAN_BG $COLOR_GIT_CLEAN_FG "bzr@$revision"
       fi
     fi
   fi
@@ -288,11 +305,11 @@ prompt_hg() {
         st='±'
       elif [[ -n $(hg prompt "{status|modified}") ]]; then
         # if any modification
-        prompt_segment yellow black
+        prompt_segment $COLOR_GIT_DIRTY_BG $COLOR_GIT_DIRTY_FG
         st='±'
       else
         # if working copy is clean
-        prompt_segment green $CURRENT_FG
+        prompt_segment $COLOR_GIT_CLEAN_BG $COLOR_GIT_CLEAN_FG
       fi
       echo -n ${$(hg prompt "☿ {rev}@{branch}"):gs/%/%%} $st
     else
@@ -303,10 +320,10 @@ prompt_hg() {
         prompt_segment red black
         st='±'
       elif `hg st | grep -q "^[MA]"`; then
-        prompt_segment yellow black
+        prompt_segment $COLOR_GIT_DIRTY_BG $COLOR_GIT_DIRTY_FG
         st='±'
       else
-        prompt_segment green $CURRENT_FG
+        prompt_segment $COLOR_GIT_CLEAN_BG $COLOR_GIT_CLEAN_FG
       fi
       echo -n "☿ ${rev:gs/%/%%}@${branch:gs/%/%%}" $st
     fi
@@ -315,14 +332,7 @@ prompt_hg() {
 
 # Dir: current working directory
 prompt_dir() {
-  #local color_background=blue
-  #local color_foreground=$CURRENT_FG
-  #if [[ "$USERNAME" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
-  #  color_background='blue'
-  #  color_foreground='default'
-  #fi
-  #prompt_segment $color_background $color_foreground '%~'
-  prompt_segment blue $CURRENT_FG '%~'
+  prompt_segment $COLOR_PATH_BG $COLOR_PATH_FG '%~'
 }
 
 # Virtualenv: current working virtualenv
@@ -330,8 +340,7 @@ prompt_virtualenv() {
   if [[ -n "$VIRTUAL_ENV" && -n "$VIRTUAL_ENV_DISABLE_PROMPT" ]]; then
     #venv_name=$VIRTUAL_ENV
     venv_name="venv"
-    local vbg=$(_prompt_pick 235 black)
-    prompt_segment $vbg default "(${venv_name:t:gs/%/%%})"
+    prompt_segment $COLOR_VENV_BG $COLOR_VENV_FG "(${venv_name:t:gs/%/%%})"
   fi
 }
 
@@ -345,23 +354,23 @@ prompt_status() {
 
   if [[ $RETVAL -ne 0 ]]; then
     if [[ "$glyphs" == "true" ]]; then
-      symbols+="%{%F{red}%}✘$RETVAL"
+      symbols+="%{%F{${COLOR_STATUS_ERR_FG}}%}✘$RETVAL"
     else
-      symbols+="%{%F{red}%}x$RETVAL"
+      symbols+="%{%F{${COLOR_STATUS_ERR_FG}}%}x$RETVAL"
     fi
   fi
   if [[ $(jobs -l | wc -l) -gt 0 ]]; then
     if [[ "$glyphs" == "true" ]]; then
-      symbols+="%{%F{cyan}%}⚙"
+      symbols+="%{%F{${COLOR_STATUS_JOBS_FG}}%}⚙"
     else
-      symbols+="%{%F{cyan}%}j"
+      symbols+="%{%F{${COLOR_STATUS_JOBS_FG}}%}j"
     fi
   fi
   if [[ $UID -eq 0 ]]; then
     if [[ "$glyphs" == "true" ]]; then
-      symbols+="%{%F{yellow}%}\U26A1"
+      symbols+="%{%F{${COLOR_STATUS_ROOT_FG}}%}\U26A1"
     else
-      symbols+="%{%F{yellow}%}!"
+      symbols+="%{%F{${COLOR_STATUS_ROOT_FG}}%}!"
     fi
   fi
 
@@ -372,8 +381,7 @@ prompt_status() {
   fi
 
   [[  -n "$symbols" &&  -n "$status_result" ]] && delimiter=" "
-  local sbg=$(_prompt_pick 235 black)
-  [[ -n "$symbols" ||  -n "$status_result" ]] && prompt_segment $sbg white "$symbols$delimiter$status_result"
+  [[ -n "$symbols" ||  -n "$status_result" ]] && prompt_segment $COLOR_STATUS_BG $COLOR_STATUS_FG "$symbols$delimiter$status_result"
 }
 
 #AWS Profile:
@@ -384,8 +392,8 @@ prompt_status() {
 prompt_aws() {
   [[ -z "$AWS_PROFILE" || "$SHOW_AWS_PROMPT" = false ]] && return
   case "$AWS_PROFILE" in
-    *-prod|*production*) prompt_segment red yellow  "AWS: ${AWS_PROFILE:gs/%/%%}" ;;
-    *) prompt_segment green black "AWS: ${AWS_PROFILE:gs/%/%%}" ;;
+    *-prod|*production*) prompt_segment $COLOR_AWS_PROD_BG $COLOR_AWS_PROD_FG  "AWS: ${AWS_PROFILE:gs/%/%%}" ;;
+    *) prompt_segment $COLOR_AWS_NONPROD_BG $COLOR_AWS_NONPROD_FG "AWS: ${AWS_PROFILE:gs/%/%%}" ;;
   esac
 }
 
@@ -402,8 +410,7 @@ prompt_time()
 
     rm $ZSH_AGNOSTER_PREEXEC_TIMER_LOCK
   fi
-
-  prompt_segment black default "%D{%H:%M:%S}$duration_str"
+  prompt_segment $COLOR_TIME_BG $COLOR_TIME_FG "%D{%H:%M:%S}$duration_str" "$COLOR_TIME_SEP_FG"
 }
 
 
