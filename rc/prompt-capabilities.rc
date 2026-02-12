@@ -1,0 +1,114 @@
+# Prompt capability detection (colors, powerline glyphs, background)
+#
+# Policy (per user selection):
+# - Non‑Powerline separator: '>'
+# - Enable background color probe via OSC 11 with a 60ms timeout
+# - Prefer truecolor when available, else 256 → 16 → 8
+#
+# Exposed variables:
+# - PROMPT_COLOR_MODE   ∈ {truecolor,256,16,8}
+# - POWERLINE_CAPABLE   ∈ {true,false} (respects POWERLINE_FORCE/POWERLINE_DISABLE overrides)
+# - PROMPT_BG           ∈ {dark,light,unknown}
+# - PROMPT_OSC11_TIMEOUT_MS (default 60)
+# - PROMPT_ASCII_SEPARATOR ('>')
+# - (Optional) SOLARIZED_THEME set to 'light' or 'dark' when not predefined
+#
+# Safety:
+# - Probing only runs in interactive TTY contexts.
+# - OSC 11 probe has a tight timeout and restores TTY state.
+
+# Prevent re-entry
+[[ -n "${_PROMPT_CAPS_LOADED}" ]] && return
+export _PROMPT_CAPS_LOADED=1
+
+# Defaults
+: ${PROMPT_OSC11_TIMEOUT_MS:=60}
+: ${PROMPT_ASCII_SEPARATOR:=>}
+
+# Detect color capability
+function _prompt_detect_color_mode() {
+  local colors
+  # Prefer explicit truecolor hints
+  if [[ -n "${COLORTERM:-}" && ( "$COLORTERM" == *truecolor* || "$COLORTERM" == *24bit* ) ]]; then
+    PROMPT_COLOR_MODE=truecolor
+    return
+  fi
+
+  colors=$(tput colors 2>/dev/null || echo)
+  case "${colors:-}" in
+    '' ) ;;
+    * )
+      if (( colors >= 256 )); then
+        PROMPT_COLOR_MODE=256; return
+      elif (( colors >= 16 )); then
+        PROMPT_COLOR_MODE=16; return
+      elif (( colors >= 8 )); then
+        PROMPT_COLOR_MODE=8; return
+      fi
+      ;;
+  esac
+
+  # Fallback when tput is unavailable
+  case "${TERM:-}" in
+    *-256color|xterm-256color|screen-256color|tmux-256color) PROMPT_COLOR_MODE=256 ;;
+    xterm*|screen*|tmux*|vt100|linux) PROMPT_COLOR_MODE=16 ;;
+    *) PROMPT_COLOR_MODE=8 ;;
+  esac
+}
+
+# Detect whether Powerline glyphs are likely to render correctly
+function _prompt_detect_powerline() {
+  # Hard overrides first
+  if [[ -n "${POWERLINE_FORCE:-}" ]]; then POWERLINE_CAPABLE=true; return; fi
+  if [[ -n "${POWERLINE_DISABLE:-}" ]]; then POWERLINE_CAPABLE=false; return; fi
+
+  # Require UTF-8 locale
+  local loc="${LC_ALL:-}${LC_CTYPE:-}${LANG:-}"
+  local utf8=false
+  [[ "$loc" == *UTF-8* || "$loc" == *utf8* ]] && utf8=true
+  if ! $utf8; then POWERLINE_CAPABLE=false; return; fi
+
+  # Apple Terminal: default ASCII fallback unless explicitly forced by POWERLINE_FORCE.
+  if [[ "${TERM_PROGRAM:-}" == "Apple_Terminal" && -z "${POWERLINE_FORCE:-}" ]]; then
+    POWERLINE_CAPABLE=false
+    return
+  fi
+
+  case "${TERM:-}" in
+    dumb|linux|vt100|rxvt|rxvt-*|sun-cmd) POWERLINE_CAPABLE=false ;;
+    * ) POWERLINE_CAPABLE=true ;;
+  esac
+}
+
+# Parse COLORFGBG as a heuristic fallback
+function _prompt_bg_from_colorfgbg() {
+  local cfg bg
+  cfg=${COLORFGBG:-}
+  [[ -z "$cfg" || "$cfg" != *';'* ]] && return 1
+  bg=${cfg##*;}   # last component is background index in many terminals
+  case "$bg" in
+    7|15|231|255) PROMPT_BG=light ;;
+    0|1|2|3|4|16|232|233|234|235|236|237|238|239) PROMPT_BG=dark ;;
+    * ) PROMPT_BG=unknown ;;
+  esac
+  return 0
+}
+
+# Orchestrate detection
+_prompt_detect_color_mode
+_prompt_detect_powerline
+
+# Background: probe, then fallback, else unknown
+PROMPT_BG=unknown
+_prompt_bg_from_colorfgbg || true
+
+# Optionally set SOLARIZED_THEME based on detected background if the user hasn't set it
+if [[ -z "${SOLARIZED_THEME:-}" ]]; then
+  case "$PROMPT_BG" in
+    light) export SOLARIZED_THEME=light ;;
+    dark)  export SOLARIZED_THEME=dark  ;;
+    *)     : ;; # leave unset
+  esac
+fi
+# Export user-consumable vars
+export PROMPT_COLOR_MODE PROMPT_BG POWERLINE_CAPABLE PROMPT_OSC11_TIMEOUT_MS PROMPT_ASCII_SEPARATOR

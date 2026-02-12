@@ -98,6 +98,7 @@ zstyle :omz:plugins:ssh-agent lazy yes
 
 source_if_exists "rc/before_zsh.rc"
 source_if_exists "private/before_zsh.rc"
+source_if_exists "rc/prompt-capabilities.rc"
 
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/

@@ -45,21 +45,28 @@ ROOT_STATUS_BG=red
 # How many seconds can a comand run before we show its duration in the prompt
 MAX_DURATION_SECONDS_BEFORE_PROMPT_STATUS=5
 
-# Special Powerline characters
-
-() {
+# Special Powerline characters (with ASCII fallback)
+()
+{
   local LC_ALL="" LC_CTYPE="en_US.UTF-8"
-  # NOTE: This segment separator character is correct.  In 2012, Powerline changed
-  # the code points they use for their special characters. This is the new code point.
-  # If this is not working for you, you probably have an old version of the
-  # Powerline-patched fonts installed. Download and install the new version.
-  # Do not submit PRs to change this unless you have reviewed the Powerline code point
-  # history and have new information.
-  # This is defined using a Unicode escape sequence so it is unambiguously readable, regardless of
-  # what font the user is viewing this source code in. Do not replace the
-  # escape sequence with a single literal character.
-  # Do not change this! Do not make it '\u2b80'; that is the old, wrong code point.
-  SEGMENT_SEPARATOR=$'\ue0b0'
+  if [[ "${POWERLINE_CAPABLE}" == "true" ]]; then
+    SEGMENT_SEPARATOR=$'\ue0b0'  # Powerline separator
+  else
+    SEGMENT_SEPARATOR="${PROMPT_ASCII_SEPARATOR:->}"  # ASCII fallback
+  fi
+}
+
+# Pick color token depending on color capability
+# Usage: _prompt_pick prefer256 fallback16
+# - If PROMPT_COLOR_MODE is truecolor or 256 → prefer256 is returned (e.g., 235)
+# - Else → fallback16 is returned (e.g., black)
+_prompt_pick()
+{
+  local prefer256="$1" fallback16="$2"
+  case "${PROMPT_COLOR_MODE:-}" in
+    truecolor|256) print -n -- "$prefer256" ;;
+    *)              print -n -- "$fallback16" ;;
+  esac
 }
 
 # print current time in seconds
@@ -89,7 +96,7 @@ preexec() {
   ZSH_AGNOSTER_PREEXEC_TIMER=$(current_time)
   # overwrite the prompt time with current one
   current_formatted_time=$(date +"%H:%M:%S")
-  echo -e "\033[1A\033[0C$bg[black]${current_formatted_time}"
+  echo -e "\033[1A\033[0C${current_formatted_time}\033[0m"
   touch "$ZSH_AGNOSTER_PREEXEC_TIMER_LOCK"
 }
 
@@ -100,9 +107,18 @@ prompt_segment() {
   local bg fg
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
-  if [[ $CURRENT_BG != 'DEFAULT' && $1 != $CURRENT_BG ]]; then
-    echo -n " %{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
+  if [[ "${POWERLINE_CAPABLE}" == "true" ]]; then
+    if [[ $CURRENT_BG != 'DEFAULT' && $1 != $CURRENT_BG ]]; then
+      echo -n " %{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
+    else
+      echo -n "%{$bg%}%{$fg%} "
+    fi
   else
+    # ASCII/compat mode: separate segments with a simple delimiter and avoid
+    # rendering the triangle join, but keep bg/fg coloring.
+    if [[ $CURRENT_BG != 'DEFAULT' ]]; then
+      echo -n " $SEGMENT_SEPARATOR "
+    fi
     echo -n "%{$bg%}%{$fg%} "
   fi
   CURRENT_BG=$1
@@ -111,9 +127,14 @@ prompt_segment() {
 
 # End the prompt, closing any open segments
 prompt_end() {
-  if [[ -n $CURRENT_BG ]]; then
-    echo -n " %{%k%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR"
+  if [[ "${POWERLINE_CAPABLE}" == "true" ]]; then
+    if [[ -n $CURRENT_BG ]]; then
+      echo -n " %{%k%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR"
+    else
+      echo -n "%{%k%}"
+    fi
   else
+    # In compat mode, just reset colors; no trailing separator.
     echo -n "%{%k%}"
   fi
   echo -n "%{%f%}"
@@ -149,7 +170,11 @@ prompt_git() {
   local PL_BRANCH_CHAR
   () {
     local LC_ALL="" LC_CTYPE="en_US.UTF-8"
-    PL_BRANCH_CHAR=$'\ue0a0'         # 
+    if [[ "${POWERLINE_CAPABLE}" == "true" ]]; then
+      PL_BRANCH_CHAR=$'\ue0a0'       # 
+    else
+      PL_BRANCH_CHAR='git:'          # ASCII fallback
+    fi
   }
   local ref dirty mode repo_path
 
@@ -164,15 +189,24 @@ prompt_git() {
     fi
 
     local ahead behind
-    ahead=$(git log --oneline @{upstream}.. 2>/dev/null | wc -l | xargs) # xargs is used to trim all whitespaces
+    ahead=$(git log --oneline @{upstream}.. 2>/dev/null | wc -l | xargs)
     behind=$(git log --oneline ..@{upstream} 2>/dev/null | wc -l | xargs)
-    if [[ "$ahead" -ne 0 ]] && [[ "$behind" -ne 0 ]]; then
-      #PL_BRANCH_CHAR=$'\u21c5'
-      PL_BRANCH_CHAR="\u21b1$ahead \u21b0$behind"
-    elif [[ "$ahead" -ne 0 ]]; then
-      PL_BRANCH_CHAR=$'\u21b1'$ahead
-    elif [[ "$behind" -ne 0 ]]; then
-      PL_BRANCH_CHAR=$'\u21b0'$behind
+    if [[ "${POWERLINE_CAPABLE}" == "true" ]]; then
+      if [[ "$ahead" -ne 0 ]] && [[ "$behind" -ne 0 ]]; then
+        PL_BRANCH_CHAR="\u21b1$ahead \u21b0$behind"
+      elif [[ "$ahead" -ne 0 ]]; then
+        PL_BRANCH_CHAR=$'\u21b1'$ahead
+      elif [[ "$behind" -ne 0 ]]; then
+        PL_BRANCH_CHAR=$'\u21b0'$behind
+      fi
+    else
+      if [[ "$ahead" -ne 0 ]] && [[ "$behind" -ne 0 ]]; then
+        PL_BRANCH_CHAR="^${ahead} v${behind}"
+      elif [[ "$ahead" -ne 0 ]]; then
+        PL_BRANCH_CHAR="^${ahead}"
+      elif [[ "$behind" -ne 0 ]]; then
+        PL_BRANCH_CHAR="v${behind}"
+      fi
     fi
 
     if [[ -e "${repo_path}/BISECT_LOG" ]]; then
@@ -186,7 +220,11 @@ prompt_git() {
     local stashed_prompt stashed_number
     stashed_number=$(command git stash list 2>/dev/null | wc -l | tr -d ' ')
     if [[ "${stashed_number}" -gt 0 ]]; then
-      stashed_prompt=" \u2b13"
+      if [[ "${POWERLINE_CAPABLE}" == "true" ]]; then
+        stashed_prompt=" \u2b13"
+      else
+        stashed_prompt=" S"
+      fi
     fi
 
     local new_files_prompt
@@ -292,7 +330,8 @@ prompt_virtualenv() {
   if [[ -n "$VIRTUAL_ENV" && -n "$VIRTUAL_ENV_DISABLE_PROMPT" ]]; then
     #venv_name=$VIRTUAL_ENV
     venv_name="venv"
-    prompt_segment 235 default "(${venv_name:t:gs/%/%%})"
+    local vbg=$(_prompt_pick 235 black)
+    prompt_segment $vbg default "(${venv_name:t:gs/%/%%})"
   fi
 }
 
@@ -302,10 +341,29 @@ prompt_virtualenv() {
 prompt_status() {
   local -a symbols
   local delimiter
+  local glyphs=${POWERLINE_CAPABLE:-false}
 
-  [[ $RETVAL -ne 0 ]] && symbols+="%{%F{red}%}✘$RETVAL"
-  [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙"
-  [[ $UID -eq 0 ]] && symbols+="%{%F{yellow}%}\U26A1"
+  if [[ $RETVAL -ne 0 ]]; then
+    if [[ "$glyphs" == "true" ]]; then
+      symbols+="%{%F{red}%}✘$RETVAL"
+    else
+      symbols+="%{%F{red}%}x$RETVAL"
+    fi
+  fi
+  if [[ $(jobs -l | wc -l) -gt 0 ]]; then
+    if [[ "$glyphs" == "true" ]]; then
+      symbols+="%{%F{cyan}%}⚙"
+    else
+      symbols+="%{%F{cyan}%}j"
+    fi
+  fi
+  if [[ $UID -eq 0 ]]; then
+    if [[ "$glyphs" == "true" ]]; then
+      symbols+="%{%F{yellow}%}\U26A1"
+    else
+      symbols+="%{%F{yellow}%}!"
+    fi
+  fi
 
   local status_result private_status_file
   private_status_file="$MAIN_ZSH/private/agnoster_private_status.zsh"
@@ -314,7 +372,8 @@ prompt_status() {
   fi
 
   [[  -n "$symbols" &&  -n "$status_result" ]] && delimiter=" "
-  [[ -n "$symbols" ||  -n "$status_result" ]] && prompt_segment 235 white "$symbols$delimiter$status_result"
+  local sbg=$(_prompt_pick 235 black)
+  [[ -n "$symbols" ||  -n "$status_result" ]] && prompt_segment $sbg white "$symbols$delimiter$status_result"
 }
 
 #AWS Profile:
