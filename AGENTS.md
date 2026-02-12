@@ -34,11 +34,12 @@ Critical constraints for agents
 
 Conventions that affect tools and linking
 - Use clickable links for files and code with the format [name](relative/path:line optional). Examples: [zshrc](zshrc:1), [ansible/install_here.yaml](ansible/install_here.yaml:1).
-- When referring to theme or plugin configuration, note that:
+- When referring to theme, plugins, and colors, note that:
   - Theme is set to my_agnoster in [zshrc](zshrc:36)
   - Plugins are configured in [zshrc](zshrc:106)
   - oh-my-zsh core load occurs at [zshrc](zshrc:108)
   - Layered sourcing occurs around [zshrc](zshrc:98) and [zshrc](zshrc:139)
+  - Semantic prompt colors are centralized in [rc/colors.rc](rc/colors.rc:1) and depend on detection in [rc/prompt-capabilities.rc](rc/prompt-capabilities.rc:1) (PROMPT_COLOR_MODE, SOLARIZED_THEME). The theme consumes COLOR_* variables.
 
 Recommended analysis workflow
 - Identify task and scope boundaries.

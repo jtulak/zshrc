@@ -39,4 +39,5 @@ Layering and sourcing order
 
 Notes
 - Files under [private/](private/) are deliberately untracked and out of scope for this memory bank.
+- Colors: semantic COLOR_* variables are defined in [rc/colors.rc](rc/colors.rc:1) with capability detection (truecolor/256/16) from [rc/prompt-capabilities.rc](rc/prompt-capabilities.rc:1). Override PROMPT_COLOR_MODE or SOLARIZED_THEME if required. Preview with [bin/show_all_colors](bin/show_all_colors:1).
 - To apply changes, open a new shell or run exec zsh in your terminal.

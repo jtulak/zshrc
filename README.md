@@ -14,6 +14,7 @@ There are some dependencies, all are packed in or are widely available, but they
  - powerline fonts (`cd /dependencies/powerline-fonts; ./install.sh`)
  - solarized color theme for terminal - just a soft, nice looking dependency, iterm2 already has it as a built-in option
     - I have included `/custom_solarized.itermcolors` color theme for Iterm2. It's based on solarized, but I keep tweaking it and it slowly drifts away from the original theme.
+    - The prompt itself is semi-hardcoded to use the solarized-like colors. See *Colors* section for more details.
 
 
 To use this config, run
@@ -56,6 +57,11 @@ How it differs from a plain oh-my-zsh + Agnoster
     - `is_host_reachable` checks with ping the availability of a hostname, prints it out nicely and returns an appropriate exit code
     - `gl` is an `git log` wrapper
     - Aliases are in `/rc/alias.rc`
+
+Colors
+------
+- Prompt colors are centrally configured in [rc/colors.rc](rc/colors.rc:1) using semantic COLOR_* variables with automatic capability detection from [rc/prompt-capabilities.rc](rc/prompt-capabilities.rc:1) (truecolor/256/16). Override SOLARIZED_THEME or PROMPT_COLOR_MODE if needed.
+- [bin/show_all_colors](bin/show_all_colors:1) also displays the current theme’s semantic colors.
 
 Directories and paths
 ---------------------
