@@ -1,3 +1,4 @@
+#!/bin/zsh
 # Prompt capability detection (colors, powerline glyphs, background)
 #
 # Policy (per user selection):
