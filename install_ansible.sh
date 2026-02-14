@@ -66,6 +66,7 @@ CONFIG_FILE=""
 USER=""
 USE_LEGACY=0
 COPY_PRIVATE=0
+declare -a EXTRA_VARS=()
 
 # Process all flags until “--” (end of options)
 while true; do
@@ -168,15 +169,15 @@ fi
 if [[ -z "${ANSIBLE_PKG_SPEC:-}" ]]; then
     if [[ $USE_LEGACY -eq 1 ]]; then
         # Use ansible-base for legacy to avoid uvx warning and match where the console script lives.
-        ANSIBLE_PKG_SPEC='ansible==2.10.*'
+        ANSIBLE_LAUNCH=("uvx" "--from" "ansible==2.10.*" "ansible-playbook")
     else
-        ANSIBLE_PKG_SPEC='ansible'
+        # Use ansible-core (provides binary) + ansible (provides standard collections) to avoid uvx warning
+        ANSIBLE_LAUNCH=("uvx" "--from" "ansible-core" "--with" "ansible" "ansible-playbook")
     fi
+else
+    # User override - they are responsible for correct flags/specs.
+    ANSIBLE_LAUNCH=("uvx" "--from" "${ANSIBLE_PKG_SPEC}" "ansible-playbook")
 fi
-
-# Build launcher using uvx ephemeral runner
-# Example: uvx --from ansible-core ansible-playbook ...
-read -r -a ANSIBLE_LAUNCH <<< "uvx --from ${ANSIBLE_PKG_SPEC} ansible-playbook"
 
 
 CONFIG_FILE_DEFAULT="$ZSH_HOME/ansible/install.yaml"
@@ -212,7 +213,11 @@ if [[ $DRY_RUN -eq 1 ]]; then
     if (( ${#OPTIONS[@]} )); then
         CMD+=("${OPTIONS[@]}")
     fi
-    CMD+=(-i "$HOSTNAME," "$CONFIG_FILE" "${EXTRA_VARS[@]}" --check)
+    CMD+=(-i "$HOSTNAME," "$CONFIG_FILE")
+    if (( ${#EXTRA_VARS[@]} )); then
+        CMD+=("${EXTRA_VARS[@]}")
+    fi
+    CMD+=(--check)
 	"${CMD[@]}"
 else
     echo "Performing real changes on ${HOSTNAME}"
@@ -220,6 +225,9 @@ else
     if (( ${#OPTIONS[@]} )); then
         CMD+=("${OPTIONS[@]}")
     fi
-    CMD+=(-i "$HOSTNAME," "$CONFIG_FILE" "${EXTRA_VARS[@]}")
+    CMD+=(-i "$HOSTNAME," "$CONFIG_FILE")
+    if (( ${#EXTRA_VARS[@]} )); then
+        CMD+=("${EXTRA_VARS[@]}")
+    fi
 	"${CMD[@]}"
 fi
