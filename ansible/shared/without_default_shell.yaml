@@ -9,7 +9,7 @@
     # overrides 
     # Force copy on localhost: add -e zsh_copy_repo=true
     # Force skip on remote: add -e zsh_copy_repo=false
-    - (zsh_copy_repo | default((ansible_connection | default('ssh')) != 'local')) | bool
+    - (zsh_copy_repo | default(true)) | bool
 
 - name: “Install ZSH”
   import_tasks: 10_install_zsh.yaml

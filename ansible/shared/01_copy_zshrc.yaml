@@ -1,16 +1,13 @@
 ---
 
-- name: Check if remote private dir exists
-  stat:
-    path: "{{ zsh_dir }}/private"
-  register: zsh_private_stat
+
 
 - name: Build rsync options
   set_fact:
     zsh_rsync_opts: >-
       {{
         ['--archive', '--delete']
-        + (((zsh_private_stat.stat.isdir | default(false)) and not (zsh_copy_private | default(false) | bool))
+        + ((not (zsh_copy_private | default(false) | bool))
           | ternary(['--exclude=private/'], []))
       }}
 
