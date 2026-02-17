@@ -9,8 +9,10 @@ __uv_light_notice_on_chpwd() {
   emulate -L zsh
   local dir="$PWD"
   if [[ -f "$dir/requirements.txt" && ! -f "$dir/pyproject.toml" ]]; then
-    echo "$fg_bold[magenta][python-uv]$fg_no_bold[default] $fg[magenta]Found legacy Python project: requirements.txt but no pyproject.toml$fg[default]"
-    echo "$fg_bold[magenta][python-uv]$fg_no_bold[default] $fg[magenta]Convert with: uv init && uv add -r requirements.txt$fg[default]"
+    fmt_start="$fg_bold[magenta][python-uv]$fg_no_bold[default] $fg[magenta]"
+    fmt_end="$fg[default]"
+    echo "${fmt_start}Found legacy Python project: requirements.txt but no pyproject.toml$fmt_end"
+    echo "${fmt_start}uv venv && uv pip install -r requirements.txt$fmt_end"
   fi
 }
 
