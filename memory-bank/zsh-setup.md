@@ -15,7 +15,6 @@ Theme
 
 Plugins
 - Plugins configured in [zshrc](zshrc:106):
-  - zsh-256color
   - ssh-agent
   - uv
 
