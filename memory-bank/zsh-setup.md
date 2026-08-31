@@ -15,8 +15,8 @@ Theme
 
 Plugins
 - Plugins configured in [zshrc](zshrc:106):
-  - ssh-agent
-  - uv
+  - `uv` on every platform
+  - `ssh-agent` on non-macOS hosts only; macOS uses its system-managed agent
 
 Update policy and performance
 - oh-my-zsh update reminder configured in [zshrc](zshrc:56) with frequency in [zshrc](zshrc:59)
@@ -25,7 +25,7 @@ Update policy and performance
 - Upstream ahead/behind counts are cached for five seconds by default and can be overridden with non-negative integer `AGNOSTER_GIT_REMOTE_CACHE_TTL` (`0` disables caching; invalid values use five seconds).
 - The optimized Git prompt requires Git 2.17 or newer and never fetches from a remote.
 - ZLE records the displayed row count across the primary editor and any secondary-prompt continuation sessions. Once `preexec` confirms that the complete command will execute, it uses that count to update the original timestamp and restores the output cursor. If the original prompt has scrolled outside the terminal viewport, the rewrite is skipped rather than risking visible corruption.
-- Lazy ssh-agent is enabled via zstyle in [zshrc](zshrc:95)
+- Lazy ssh-agent is enabled via zstyle on non-macOS hosts in [zshrc](zshrc:95)
 
 Layering and sourcing order
 - Early hooks: [rc/before_zsh.rc](rc/before_zsh.rc:1) if present, and optional [private/before_zsh.rc](private/before_zsh.rc:1), referenced in [zshrc](zshrc:98)

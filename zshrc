@@ -93,8 +93,11 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Would you like to use another custom folder than $ZSH/custom?
 ZSH_CUSTOM="$MAIN_ZSH/oh-my-zsh-custom"
 
-# make ssh-agent lazy, because we do not want to be asked for a password on shell start
-zstyle :omz:plugins:ssh-agent lazy yes
+# Make the Oh My Zsh ssh-agent plugin lazy where it is used. macOS manages its
+# SSH agent through the operating system and does not need this plugin.
+if [[ "$OSTYPE" != darwin* ]]; then
+    zstyle :omz:plugins:ssh-agent lazy yes
+fi
 
 source_if_exists "rc/before_zsh.rc"
 source_if_exists "private/before_zsh.rc"
@@ -106,7 +109,10 @@ source_if_exists "rc/colors.rc"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(ssh-agent uv)
+plugins=(uv)
+if [[ "$OSTYPE" != darwin* ]]; then
+    plugins=(ssh-agent "${plugins[@]}")
+fi
 
 source $ZSH/oh-my-zsh.sh
 
