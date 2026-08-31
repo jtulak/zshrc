@@ -9,7 +9,7 @@ Key anchors
 - Utilities: [bin/](bin/)
 - Config snippets: [rc/](rc/)
 - Oh My Zsh customizations: [oh-my-zsh-custom/](oh-my-zsh-custom/)
-- Bootstrap helpers: [install_ansible.sh](install_ansible.sh), [install_for_root.sh](install_for_root.sh)
+- Bootstrap helper: [install_ansible.sh](install_ansible.sh). [install_for_root.sh](install_for_root.sh) deliberately rejects root installation.
 - Not in VCS scope: [private/](private/)
 
 Notes on boundaries

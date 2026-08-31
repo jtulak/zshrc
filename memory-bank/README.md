@@ -15,7 +15,7 @@ Repository anchors
   - [bin/](bin/) — shell utilities used interactively and by automation.
   - [rc/](rc/) — configuration snippets layered by [zshrc](zshrc:1).
   - [oh-my-zsh-custom/](oh-my-zsh-custom/) — enhanced theme and plugin overrides for oh-my-zsh.
-  - [install_ansible.sh](install_ansible.sh) and [install_for_root.sh](install_for_root.sh) — bootstrap helpers.
+  - [install_ansible.sh](install_ansible.sh) — bootstrap helper; [install_for_root.sh](install_for_root.sh) deliberately rejects root installation.
 
 Index of memory topics
 - Overview and map: [memory/repo-overview.md](memory/repo-overview.md)

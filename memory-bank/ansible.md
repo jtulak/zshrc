@@ -7,7 +7,7 @@ Location and bootstrap
 - Automation lives in [ansible/](ansible/)
 - Bootstrap helpers at repo root:
   - [install_ansible.sh](install_ansible.sh)
-  - [install_for_root.sh](install_for_root.sh)
+  - [install_for_root.sh](install_for_root.sh) is a deliberate guard that rejects root installation
 - A Python venv for modern Ansible may exist at [.venv/ansible-modern/](.venv/ansible-modern/)
 
 Typical flows (light docs)

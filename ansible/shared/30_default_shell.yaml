@@ -1,7 +1,19 @@
 ---
-  
+- name: Find the installed zsh executable
+  ansible.builtin.command: sh -c 'command -v zsh'
+  register: zsh_command
+  changed_when: false
+  failed_when: false
+
+- name: Verify that zsh was found
+  ansible.builtin.assert:
+    that:
+      - zsh_command.rc == 0
+      - zsh_command.stdout is match('^/.+')
+    fail_msg: "zsh is installed but was not found in PATH"
+
 - name: Change default shell to zsh
   become: true
-  user:
+  ansible.builtin.user:
     name: "{{ ansible_user_id }}"
-    shell: "{{ zsh_bin }}"
+    shell: "{{ zsh_command.stdout | trim }}"

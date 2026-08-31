@@ -6,7 +6,6 @@
   vars:
     home: "{{ ansible_env.HOME }}"
     zsh_dir: "{{ home }}/.zsh"
-    zsh_bin: "/bin/zsh"
     ansible_python_interpreter: /usr/bin/python3
 
   tasks:

@@ -21,6 +21,10 @@ Plugins
 Update policy and performance
 - oh-my-zsh update reminder configured in [zshrc](zshrc:56) with frequency in [zshrc](zshrc:59)
 - VCS status optimization DISABLE_UNTRACKED_FILES_DIRTY set in [zshrc](zshrc:82)
+- Git prompt branch and tracked state are refreshed once per prompt from a porcelain-v2 status snapshot. With `DISABLE_UNTRACKED_FILES_DIRTY=true`, untracked presence is refreshed asynchronously and the active ZLE prompt is safely redrawn when the marker changes; foreground programs are not affected. `AGNOSTER_GIT_UNTRACKED_CACHE_TTL` controls idle refreshes and defaults to five seconds (`0` probes after every prompt; commands always schedule a probe).
+- Upstream ahead/behind counts are cached for five seconds by default and can be overridden with non-negative integer `AGNOSTER_GIT_REMOTE_CACHE_TTL` (`0` disables caching; invalid values use five seconds).
+- The optimized Git prompt requires Git 2.17 or newer and never fetches from a remote.
+- ZLE records the displayed row count across the primary editor and any secondary-prompt continuation sessions. Once `preexec` confirms that the complete command will execute, it uses that count to update the original timestamp and restores the output cursor. If the original prompt has scrolled outside the terminal viewport, the rewrite is skipped rather than risking visible corruption.
 - Lazy ssh-agent is enabled via zstyle in [zshrc](zshrc:95)
 
 Layering and sourcing order
