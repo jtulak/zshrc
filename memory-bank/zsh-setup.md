@@ -15,13 +15,9 @@ Theme
 
 Plugins
 - Plugins configured in [zshrc](zshrc:106):
-  - macos
-  - dotenv
   - zsh-256color
-  - autoswitch_virtualenv
   - ssh-agent
-  - iterm2
-  - pyenv
+  - uv
 
 Update policy and performance
 - oh-my-zsh update reminder configured in [zshrc](zshrc:56) with frequency in [zshrc](zshrc:59)
