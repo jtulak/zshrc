@@ -3,27 +3,20 @@
 #
 # Policy (per user selection):
 # - Non‑Powerline separator: '>'
-# - Enable background color probe via OSC 11 with a 60ms timeout
 # - Prefer truecolor when available, else 256 → 16 → 8
 #
 # Exposed variables:
 # - PROMPT_COLOR_MODE   ∈ {truecolor,256,16,8}
 # - POWERLINE_CAPABLE   ∈ {true,false} (respects POWERLINE_FORCE/POWERLINE_DISABLE overrides)
 # - PROMPT_BG           ∈ {dark,light,unknown}
-# - PROMPT_OSC11_TIMEOUT_MS (default 60)
 # - PROMPT_ASCII_SEPARATOR ('>')
 # - (Optional) SOLARIZED_THEME set to 'light' or 'dark' when not predefined
-#
-# Safety:
-# - Probing only runs in interactive TTY contexts.
-# - OSC 11 probe has a tight timeout and restores TTY state.
 
 # Prevent re-entry
 [[ -n "${_PROMPT_CAPS_LOADED}" ]] && return
 export _PROMPT_CAPS_LOADED=1
 
 # Defaults
-: ${PROMPT_OSC11_TIMEOUT_MS:=60}
 : ${PROMPT_ASCII_SEPARATOR:=>}
 
 # Detect color capability
@@ -99,7 +92,7 @@ function _prompt_bg_from_colorfgbg() {
 _prompt_detect_color_mode
 _prompt_detect_powerline
 
-# Background: probe, then fallback, else unknown
+# Background: use COLORFGBG when available, else leave it unknown
 PROMPT_BG=unknown
 _prompt_bg_from_colorfgbg || true
 
@@ -112,4 +105,4 @@ if [[ -z "${SOLARIZED_THEME:-}" ]]; then
   esac
 fi
 # Export user-consumable vars
-export PROMPT_COLOR_MODE PROMPT_BG POWERLINE_CAPABLE PROMPT_OSC11_TIMEOUT_MS PROMPT_ASCII_SEPARATOR
+export PROMPT_COLOR_MODE PROMPT_BG POWERLINE_CAPABLE PROMPT_ASCII_SEPARATOR
