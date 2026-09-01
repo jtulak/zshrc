@@ -12,9 +12,9 @@ There are some dependencies, all are packed in or are widely available, but they
 
  - `pyenv` and `rsync` (handled by Ansible if you use it.)
  - powerline fonts (`cd /dependencies/powerline-fonts; ./install.sh`)
- - solarized color theme for terminal - just a soft, nice looking dependency, iterm2 already has it as a built-in option
-    - I have included `/custom_solarized.itermcolors` color theme for Iterm2. It's based on solarized, but I keep tweaking it and it slowly drifts away from the original theme.
-    - The prompt itself is semi-hardcoded to use the solarized-like colors. See *Colors* section for more details.
+ - a Solarized-compatible terminal palette is optional; iTerm2 includes Solarized presets
+    - `/custom_solarized.itermcolors` is a customized iTerm2 palette that has gradually diverged from Solarized
+    - The prompt uses Solarized-inspired semantic colors. See *Colors* for details.
 
 
 To use this config, run
