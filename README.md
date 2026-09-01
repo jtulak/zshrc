@@ -40,8 +40,6 @@ After you installed the configs, you should change at least `DEFAULT_USER` in `z
 
 If your terminal language is not English, override `LANG` and `LC_ALL` env vars in your private config. Use UTF-8 options, or the prompt won't be rendered correctly.
 
-If you want to use Python 3 virtual environments, install `virtualenv` and `mkvenv` packages (e.g. through pip), and, if you don't have `python` executable in your `PATH` (like if you are on a Mac), put `export AUTOSWITCH_DEFAULT_PYTHON="/usr/bin/python3"` into `/private/before_zsh.rc`.
-
 The Git segment requires Git 2.17 or newer. Branch and tracked worktree state are refreshed for every prompt. When `DISABLE_UNTRACKED_FILES_DIRTY=true`, untracked-file detection runs in the background and safely redraws the active ZLE prompt when its result changes; foreground programs are never redrawn over. `AGNOSTER_GIT_UNTRACKED_CACHE_TTL` controls idle refreshes (a non-negative integer, default `5`; `0` probes after every prompt; invalid values use `5`), while every executed command schedules a fresh probe. When untracked files affect dirty coloring, detection remains synchronous.
 
 Ahead/behind counts use the locally fetched upstream reference and are cached for five seconds. Override that cache with `AGNOSTER_GIT_REMOTE_CACHE_TTL` (a non-negative integer; set it to `0` to recalculate every prompt). Missing or invalid values use the five-second default. The prompt never fetches from a remote.
