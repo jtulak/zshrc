@@ -614,69 +614,6 @@ prompt_git() {
   echo -n "${${ref:gs/%/%%}/refs\/heads\//$PL_BRANCH_CHAR }${vcs_prompt}${stashed_prompt}${new_files_prompt}$_AGNOSTER_GIT_MODE"
 }
 
-prompt_bzr() {
-  (( $+commands[bzr] )) || return
-
-  # Test if bzr repository in directory hierarchy
-  local dir="$PWD"
-  while [[ ! -d "$dir/.bzr" ]]; do
-    [[ "$dir" = "/" ]] && return
-    dir="${dir:h}"
-  done
-
-  local bzr_status status_mod status_all revision
-  if bzr_status=$(bzr status 2>&1); then
-    status_mod=$(echo -n "$bzr_status" | head -n1 | grep "modified" | wc -m)
-    status_all=$(echo -n "$bzr_status" | head -n1 | wc -m)
-    revision=${$(bzr log -r-1 --log-format line | cut -d: -f1):gs/%/%%}
-    if [[ $status_mod -gt 0 ]] ; then
-      prompt_segment $COLOR_GIT_DIRTY_BG $COLOR_GIT_DIRTY_FG "bzr@$revision ✚"
-    else
-      if [[ $status_all -gt 0 ]] ; then
-        prompt_segment $COLOR_GIT_DIRTY_BG $COLOR_GIT_DIRTY_FG "bzr@$revision"
-      else
-        prompt_segment $COLOR_GIT_CLEAN_BG $COLOR_GIT_CLEAN_FG "bzr@$revision"
-      fi
-    fi
-  fi
-}
-
-prompt_hg() {
-  (( $+commands[hg] )) || return
-  local rev st branch
-  if $(hg id >/dev/null 2>&1); then
-    if $(hg prompt >/dev/null 2>&1); then
-      if [[ $(hg prompt "{status|unknown}") = "?" ]]; then
-        # if files are not added
-        prompt_segment red white
-        st='±'
-      elif [[ -n $(hg prompt "{status|modified}") ]]; then
-        # if any modification
-        prompt_segment $COLOR_GIT_DIRTY_BG $COLOR_GIT_DIRTY_FG
-        st='±'
-      else
-        # if working copy is clean
-        prompt_segment $COLOR_GIT_CLEAN_BG $COLOR_GIT_CLEAN_FG
-      fi
-      echo -n ${$(hg prompt "☿ {rev}@{branch}"):gs/%/%%} $st
-    else
-      st=""
-      rev=$(hg id -n 2>/dev/null | sed 's/[^-0-9]//g')
-      branch=$(hg id -b 2>/dev/null)
-      if `hg st | grep -q "^\?"`; then
-        prompt_segment red black
-        st='±'
-      elif `hg st | grep -q "^[MA]"`; then
-        prompt_segment $COLOR_GIT_DIRTY_BG $COLOR_GIT_DIRTY_FG
-        st='±'
-      else
-        prompt_segment $COLOR_GIT_CLEAN_BG $COLOR_GIT_CLEAN_FG
-      fi
-      echo -n "☿ ${rev:gs/%/%%}@${branch:gs/%/%%}" $st
-    fi
-  fi
-}
-
 # Dir: current working directory
 prompt_dir() {
   prompt_segment $COLOR_PATH_BG $COLOR_PATH_FG '%~'
@@ -795,8 +732,6 @@ build_prompt() {
   prompt_context
   prompt_dir
   prompt_git
-  prompt_bzr
-  prompt_hg
   prompt_end
 }
 
