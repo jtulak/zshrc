@@ -696,7 +696,6 @@ prompt_virtualenv() {
 # - are there background jobs?
 prompt_status() {
   local -a symbols
-  local delimiter
   local glyphs=${POWERLINE_CAPABLE:-false}
 
   if [[ $RETVAL -ne 0 ]]; then
@@ -721,14 +720,7 @@ prompt_status() {
     fi
   fi
 
-  local status_result private_status_file
-  private_status_file="$MAIN_ZSH/private/agnoster_private_status.zsh"
-  if [[ -f "$private_status_file" ]]; then
-    status_result=$($private_status_file)
-  fi
-
-  [[  -n "$symbols" &&  -n "$status_result" ]] && delimiter=" "
-  [[ -n "$symbols" ||  -n "$status_result" ]] && prompt_segment $COLOR_STATUS_BG $COLOR_STATUS_FG "$symbols$delimiter$status_result"
+  [[ -n "$symbols" ]] && prompt_segment $COLOR_STATUS_BG $COLOR_STATUS_FG "$symbols"
 }
 
 #AWS Profile:

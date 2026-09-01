@@ -54,8 +54,6 @@ How it differs from a plain oh-my-zsh + Agnoster
     - when you run a command, the last prompt will update its time to `now`
     - if a command runs more than a few seconds, its duration will be printed out in the following prompt
 - slightly modified git status, to be more verbose about local/remote differences
-- easily extendable status segment
-    - create `/private/agnoster_private_status.zsh` and everything that this script prints out will be added to the dark segment right after time
 - useful scripts
     - `show_all_colors` will print a table of available colors, so you can use it to tune the colors to your taste
     - `is_host_reachable` checks with ping the availability of a hostname, prints it out nicely and returns an appropriate exit code
