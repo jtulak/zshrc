@@ -34,7 +34,6 @@ alias reboot="shutdown -r now"
 alias vim="vim -p" # open with tabs
 alias cvs="cvs -z3"
 alias ta="tmux new-session -A -s" # Attach to a tmux session. If it doesn't exist, create a new one.
-alias lsdir="du -h --max-depth=1 $1 | sort -h"
 
 # get back the bash-style 'help <command>'
 unalias run-help 2>/dev/null
