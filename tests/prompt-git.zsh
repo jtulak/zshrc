@@ -20,9 +20,14 @@ source "$MAIN_ZSH/oh-my-zsh-custom/themes/my_agnoster.zsh-theme"
   print -u2 -r -- 'FAIL: existing precmd hook was not preserved'
   exit 1
 }
-(( ${precmd_functions[(ie)_agnoster_git_precmd]} == 1 &&
-   ${precmd_functions[(Ie)_agnoster_git_precmd]} == 1 )) || {
-  print -u2 -r -- 'FAIL: Git precmd hook is missing or duplicated'
+(( ${precmd_functions[(ie)_agnoster_precmd]} == 1 &&
+   ${precmd_functions[(Ie)_agnoster_precmd]} == 1 )) || {
+  print -u2 -r -- 'FAIL: prompt precmd hook is missing or duplicated'
+  exit 1
+}
+(( ${preexec_functions[(ie)_agnoster_preexec]} == 1 &&
+   ${preexec_functions[(Ie)_agnoster_preexec]} == 1 )) || {
+  print -u2 -r -- 'FAIL: prompt preexec hook is missing or duplicated'
   exit 1
 }
 
@@ -268,9 +273,21 @@ cd "$clone"
 _agnoster_git_refresh
 setopt no_errexit
 false
-_agnoster_git_precmd
+_agnoster_precmd
 setopt errexit
 assert_eq "$_AGNOSTER_LAST_STATUS" 1 precmd refresh preserves command exit status
+
+SECONDS=100
+_agnoster_preexec
+SECONDS=106
+_agnoster_precmd
+assert_eq "$_AGNOSTER_LAST_DURATION" 6 precmd records command duration in parent shell
+assert_eq "$_AGNOSTER_COMMAND_RAN" false precmd consumes command lifecycle state
+
+_AGNOSTER_LAST_DURATION=9
+_AGNOSTER_COMMAND_RAN=false
+_agnoster_precmd
+assert_eq "$_AGNOSTER_LAST_DURATION" -1 precmd clears duration when no command ran
 
 POWERLINE_CAPABLE=false
 render=$(prompt_git)
@@ -284,7 +301,7 @@ _agnoster_git_zle() {
   _TEST_ZLE_CALLS+=("$*")
   return 0
 }
-add-zsh-hook -d preexec _agnoster_git_preexec
+add-zsh-hook -d preexec _agnoster_preexec
 
 _AGNOSTER_GIT_UNTRACKED=false
 _AGNOSTER_GIT_COMMAND_GENERATION=10

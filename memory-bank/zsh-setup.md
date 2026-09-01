@@ -27,6 +27,7 @@ Update policy and performance
 - Upstream ahead/behind counts are cached for five seconds by default and can be overridden with non-negative integer `AGNOSTER_GIT_REMOTE_CACHE_TTL` (`0` disables caching; invalid values use five seconds).
 - The optimized Git prompt requires Git 2.17 or newer and never fetches from a remote.
 - ZLE records the displayed row count across the primary editor and any secondary-prompt continuation sessions. Once `preexec` confirms that the complete command will execute, it uses that count to update the original timestamp and restores the output cursor. If the original prompt has scrolled outside the terminal viewport, the rewrite is skipped rather than risking visible corruption.
+- Command duration is measured from Zsh's in-process `SECONDS` counter. The `preexec` hook records the start and the first `precmd` hook computes the completed duration in the parent shell, leaving prompt rendering read-only and avoiding temporary lock files.
 - Lazy ssh-agent is enabled via zstyle on non-macOS hosts in [zshrc](zshrc:95)
 
 Layering and sourcing order

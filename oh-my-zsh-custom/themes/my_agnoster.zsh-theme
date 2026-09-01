@@ -70,46 +70,9 @@ _prompt_pick()
   esac
 }
 
-# print current time in seconds
-current_time()
-{
-  date +%s
-}
-
-# variable to track the runtime of the last command
-ZSH_AGNOSTER_PREEXEC_TIMER=$(current_time)
+typeset -gi _AGNOSTER_COMMAND_STARTED_AT=0
+typeset -gi _AGNOSTER_LAST_DURATION=-1
 typeset -gi _AGNOSTER_EDIT_BUFFER_LINES=0
-# A lock file to ensure that we count the duration of the last command just once.
-# This is a little hack, because while we can set variables in preexec(),
-# we cannot really change them once inside of prompt rendering. So we cannot stop the counting
-# once triggered - the scope will just mask any change, and the next prompt will still see the
-# the timer running. 
-# The only way I found is to have an externality, like a tempfile.
-ZSH_AGNOSTER_PREEXEC_TIMER_LOCK=$(mktemp /tmp/compare.XXXXXX)
-
-# run just before the next command is run
-preexec() {
-  # Run this only in interactive TTY contexts.
-  if [[ "${INTERACTIVE}" != "yes" || ! -t 1 ]]; then
-    return
-  fi
-
-  # Save the command start time for duration reporting.
-  ZSH_AGNOSTER_PREEXEC_TIMER=$(current_time)
-
-  # preexec is the first point where Zsh has accepted the complete command.
-  # ZLE records the displayed rows across PS1 and any PS2 continuations so the
-  # timestamp can be updated without guessing from the command text.
-  local prompt_lines=$_AGNOSTER_EDIT_BUFFER_LINES
-  if (( prompt_lines > 0 && prompt_lines < ${LINES:-999999} )); then
-    local current_formatted_time=$(date +"%H:%M:%S")
-    printf '\0337\033[%dA\r\033[1C' "$prompt_lines"
-    print -nP -- "%K{$COLOR_TIME_BG}%F{$COLOR_TIME_FG}${current_formatted_time}%f%k"
-    printf '\0338'
-  fi
-
-  touch "$ZSH_AGNOSTER_PREEXEC_TIMER_LOCK"
-}
 
 # A continued command is read through multiple ZLE sessions: one under PS1 and
 # one for each PS2 line. BUFFERLINES includes visual wrapping, so accumulating
@@ -245,7 +208,7 @@ typeset -gi _AGNOSTER_GIT_UNTRACKED_PENDING_GENERATION=0
 typeset -gi _AGNOSTER_GIT_UNTRACKED_FD=-1
 typeset -gi _AGNOSTER_GIT_UNTRACKED_PID=-1
 typeset -gi _AGNOSTER_GIT_COMMAND_GENERATION=0
-typeset -g _AGNOSTER_GIT_COMMAND_RAN=false
+typeset -g _AGNOSTER_COMMAND_RAN=false
 typeset -g _AGNOSTER_LAST_STATUS=0
 
 _agnoster_git_reset_state() {
@@ -402,7 +365,7 @@ _agnoster_git_schedule_untracked_refresh() {
   local now=$REPLY
   local cached=${_AGNOSTER_GIT_UNTRACKED_CACHE[$_AGNOSTER_GIT_DIR]-}
   local cached_at=${_AGNOSTER_GIT_UNTRACKED_CACHE_TIME[$_AGNOSTER_GIT_DIR]:-0}
-  if [[ $_AGNOSTER_GIT_COMMAND_RAN == true || -z $cached || $ttl -eq 0 ||
+  if [[ $_AGNOSTER_COMMAND_RAN == true || -z $cached || $ttl -eq 0 ||
         $now -lt $cached_at || $(( now - cached_at )) -ge $ttl ]]; then
     _agnoster_git_start_untracked_refresh
   fi
@@ -551,7 +514,7 @@ _agnoster_git_refresh() {
 }
 
 # Git: branch/detached head, dirty status. Rendering only; refresh work is in
-# _agnoster_git_precmd so it runs in the parent shell and can retain its cache.
+# _agnoster_precmd so it runs in the parent shell and can retain its cache.
 prompt_git() {
   [[ $_AGNOSTER_GIT_REPO == true ]] || return 0
 
@@ -673,45 +636,62 @@ prompt_aws() {
   esac
 }
 
-# Time of the prompt render
+# Current time and duration of the previous command
 prompt_time()
 {
-  local duration_str duration
-
-  if [[ -f "$ZSH_AGNOSTER_PREEXEC_TIMER_LOCK" ]]; then
-    duration=$(($(current_time) - $ZSH_AGNOSTER_PREEXEC_TIMER))
-    if [[ $duration -gt $MAX_DURATION_SECONDS_BEFORE_PROMPT_STATUS ]]; then
-      duration_str=" (${duration}s)"
-    fi
-
-    rm $ZSH_AGNOSTER_PREEXEC_TIMER_LOCK
+  local duration_str=""
+  if (( _AGNOSTER_LAST_DURATION > MAX_DURATION_SECONDS_BEFORE_PROMPT_STATUS )); then
+    duration_str=" (${_AGNOSTER_LAST_DURATION}s)"
   fi
   prompt_segment $COLOR_TIME_BG $COLOR_TIME_FG "%D{%H:%M:%S}$duration_str" "$COLOR_TIME_SEP_FG"
 }
 
 
-_agnoster_git_preexec() {
+_agnoster_preexec() {
   (( ++_AGNOSTER_GIT_COMMAND_GENERATION ))
-  _AGNOSTER_GIT_COMMAND_RAN=true
+  _AGNOSTER_COMMAND_RAN=true
+  _AGNOSTER_COMMAND_STARTED_AT=$SECONDS
+
+  # Run the timestamp rewrite only in interactive TTY contexts.
+  if [[ "${INTERACTIVE}" != "yes" || ! -t 1 ]]; then
+    return 0
+  fi
+
+  # preexec is the first point where Zsh has accepted the complete command.
+  # ZLE records the displayed rows across PS1 and any PS2 continuations so the
+  # timestamp can be updated without guessing from the command text.
+  local prompt_lines=$_AGNOSTER_EDIT_BUFFER_LINES
+  if (( prompt_lines > 0 && prompt_lines < ${LINES:-999999} )); then
+    local current_formatted_time=$(date +"%H:%M:%S")
+    printf '\0337\033[%dA\r\033[1C' "$prompt_lines"
+    print -nP -- "%K{$COLOR_TIME_BG}%F{$COLOR_TIME_FG}${current_formatted_time}%f%k"
+    printf '\0338'
+  fi
+
   return 0
 }
 
-_agnoster_git_precmd() {
+_agnoster_precmd() {
   local last_status=$?
   _AGNOSTER_LAST_STATUS=$last_status
+  if [[ $_AGNOSTER_COMMAND_RAN == true ]]; then
+    _AGNOSTER_LAST_DURATION=$(( SECONDS - _AGNOSTER_COMMAND_STARTED_AT ))
+  else
+    _AGNOSTER_LAST_DURATION=-1
+  fi
   _agnoster_git_refresh
   _agnoster_git_schedule_untracked_refresh
-  _AGNOSTER_GIT_COMMAND_RAN=false
+  _AGNOSTER_COMMAND_RAN=false
   return 0
 }
 
 autoload -Uz add-zsh-hook add-zle-hook-widget
 typeset -ga precmd_functions
 (( ${+precmd_functions} )) || precmd_functions=()
-add-zsh-hook -d preexec _agnoster_git_preexec
-add-zsh-hook preexec _agnoster_git_preexec
-add-zsh-hook -d precmd _agnoster_git_precmd
-add-zsh-hook precmd _agnoster_git_precmd
+add-zsh-hook -d preexec _agnoster_preexec
+add-zsh-hook preexec _agnoster_preexec
+add-zsh-hook -d precmd _agnoster_precmd
+add-zsh-hook precmd _agnoster_precmd
 add-zsh-hook -d zshexit _agnoster_git_untracked_cleanup
 add-zsh-hook zshexit _agnoster_git_untracked_cleanup
 add-zle-hook-widget -d line-init _agnoster_track_prompt_lines_on_line_init
@@ -720,7 +700,7 @@ add-zle-hook-widget -d line-finish _agnoster_track_prompt_lines_on_line_finish
 add-zle-hook-widget line-finish _agnoster_track_prompt_lines_on_line_finish
 # Capture the command status before other precmd hooks can change it while
 # retaining those hooks and their existing order relative to one another.
-precmd_functions=(_agnoster_git_precmd ${precmd_functions:#_agnoster_git_precmd})
+precmd_functions=(_agnoster_precmd ${precmd_functions:#_agnoster_precmd})
 
 ## Main prompt
 build_prompt() {
