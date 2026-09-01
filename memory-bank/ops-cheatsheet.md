@@ -18,4 +18,4 @@ Colors
 - Verify loaded keys: ssh-add -l
  
  Ansible
-- See [memory/ansible.md](memory/ansible.md) for flows and pointers.
+- See [memory-bank/ansible.md](memory-bank/ansible.md) for flows and pointers.

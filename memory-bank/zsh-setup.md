@@ -12,6 +12,8 @@ Core paths and variables
 Theme
 - Selected theme: my_agnoster configured in [zshrc](zshrc:36)
 - Custom theme implementation and overrides live under [oh-my-zsh-custom/](oh-my-zsh-custom/)
+- The prompt reports Git state only; legacy Bazaar and Mercurial segments have been removed.
+- Status rendering is in-process and does not invoke a private helper on every prompt.
 
 Plugins
 - Plugins configured in [zshrc](zshrc:106):
@@ -38,5 +40,5 @@ Layering and sourcing order
 
 Notes
 - Files under [private/](private/) are deliberately untracked and out of scope for this memory bank.
-- Colors: semantic COLOR_* variables are defined in [rc/colors.rc](rc/colors.rc:1) with capability detection (truecolor/256/16) from [rc/prompt-capabilities.rc](rc/prompt-capabilities.rc:1). Override PROMPT_COLOR_MODE or SOLARIZED_THEME if required. Preview with [bin/show_all_colors](bin/show_all_colors:1).
+- Colors: semantic COLOR_* variables are defined in [rc/colors.rc](rc/colors.rc:1) with capability detection (truecolor/256/16) from [rc/prompt-capabilities.rc](rc/prompt-capabilities.rc:1). Background detection uses `COLORFGBG` when available and otherwise remains unknown; it does not query the terminal with OSC 11. Override PROMPT_COLOR_MODE or SOLARIZED_THEME if required. Preview with [bin/show_all_colors](bin/show_all_colors:1).
 - To apply changes, open a new shell or run exec zsh in your terminal.

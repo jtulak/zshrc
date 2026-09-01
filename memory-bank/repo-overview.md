@@ -29,16 +29,16 @@ graph TD
 ```
 
 Directory purposes
-- [ansible/](ansible/): Playbooks and roles to bootstrap or update a host and optionally upload configuration; designed for idempotence. See [memory/ansible.md](memory/ansible.md).
+- [ansible/](ansible/): Playbooks and roles to bootstrap or update a host and optionally upload configuration; designed for idempotence. See [memory-bank/ansible.md](memory-bank/ansible.md).
 - [bin/](bin/): Assorted helper scripts used interactively or by automation. For light documentation, scripts are not enumerated individually.
 - [rc/](rc/): Configuration snippets sourced from [zshrc](zshrc:1) such as options, environment, and aliases. Common files include [rc/options.rc](rc/options.rc:1), [rc/env.rc](rc/env.rc:1), and [rc/alias.rc](rc/alias.rc:1). Prompt colors are centralized in [rc/colors.rc](rc/colors.rc:1).
-- [oh-my-zsh-custom/](oh-my-zsh-custom/): Custom theme(s) and plugin overrides for oh-my-zsh, including the enhanced Agnoster variant referenced by ZSH_THEME in [zshrc](zshrc:36).
-- [dependencies/](dependencies/): Vendored or managed dependencies such as oh-my-zsh itself.
+- [oh-my-zsh-custom/](oh-my-zsh-custom/): Custom theme and overrides for oh-my-zsh, including the enhanced Agnoster variant referenced by ZSH_THEME in [zshrc](zshrc:36). The active plugins are `uv` everywhere and lazy `ssh-agent` on non-macOS hosts only.
+- [dependencies/](dependencies/): Managed dependencies. Only oh-my-zsh and powerline-fonts are configured as submodules.
 
 Conventions
 - Keep shell config layered: base in [zshrc](zshrc:1), extend via [rc/](rc/) and oh-my-zsh custom; machine-local in [private/](private/) when needed.
 - Prefer portable, idempotent automation and avoid hardcoding machine-specific paths outside [private/](private/).
 
 See also
-- Purpose and contribution rules: [memory/README.md](memory/README.md)
-- ZSH and theme details: [memory/zsh-setup.md](memory/zsh-setup.md)
+- Purpose and contribution rules: [memory-bank/README.md](memory-bank/README.md)
+- ZSH and theme details: [memory-bank/zsh-setup.md](memory-bank/zsh-setup.md)

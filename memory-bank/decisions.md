@@ -27,3 +27,7 @@ ADR-0006: Execution-time prompt timestamp redraw
 ADR-0007: Portable default shell and root installation
 - Decision: Discover the installed Zsh executable from the target host's `PATH` after prerequisite installation instead of assuming `/bin/zsh`. Keep `install_for_root.sh` as an explicit failing guard rather than installing this environment for root.
 - Rationale: Zsh can live at different absolute paths across supported macOS and Linux hosts. Root should retain a minimal, independently managed login environment rather than inheriting this user-oriented configuration.
+
+ADR-0008: Retire unused prompt and dependency integrations
+- Decision: Keep the custom prompt Git-only, remove the empty private status subprocess hook, and maintain only oh-my-zsh and powerline-fonts as submodules. Detect prompt background from `COLORFGBG` when available rather than documenting an unimplemented OSC 11 probe.
+- Rationale: The removed Bazaar, Mercurial, Solarized repository, autoswitch-virtualenv metadata, and external prompt helper were unused or stale in the maintained setup. Removing them reduces prompt work, checkout size, and misleading maintenance surface.

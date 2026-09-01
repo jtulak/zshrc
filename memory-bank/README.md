@@ -16,25 +16,26 @@ Repository anchors
   - [rc/](rc/) — configuration snippets layered by [zshrc](zshrc:1).
   - [oh-my-zsh-custom/](oh-my-zsh-custom/) — enhanced theme and plugin overrides for oh-my-zsh.
   - [install_ansible.sh](install_ansible.sh) — bootstrap helper; [install_for_root.sh](install_for_root.sh) deliberately rejects root installation.
+  - [.gitmodules](.gitmodules) — only oh-my-zsh and powerline-fonts are maintained as submodules.
 
 Index of memory topics
-- Overview and map: [memory/repo-overview.md](memory/repo-overview.md)
-- ZSH and prompt setup: [memory/zsh-setup.md](memory/zsh-setup.md)
-- Ansible usage and workflows: [memory/ansible.md](memory/ansible.md)
-- Daily ops cheatsheet: [memory/ops-cheatsheet.md](memory/ops-cheatsheet.md)
-- Conventions and style: [memory/conventions.md](memory/conventions.md)
-- Do-not-track and secrets policy: [memory/do-not-track.md](memory/do-not-track.md)
-- Decisions (ADR-lite): [memory/decisions.md](memory/decisions.md)
+- Overview and map: [memory-bank/repo-overview.md](memory-bank/repo-overview.md)
+- ZSH and prompt setup: [memory-bank/zsh-setup.md](memory-bank/zsh-setup.md)
+- Ansible usage and workflows: [memory-bank/ansible.md](memory-bank/ansible.md)
+- Daily ops cheatsheet: [memory-bank/ops-cheatsheet.md](memory-bank/ops-cheatsheet.md)
+- Conventions and style: [memory-bank/conventions.md](memory-bank/conventions.md)
+- Do-not-track and secrets policy: [memory-bank/do-not-track.md](memory-bank/do-not-track.md)
+- Decisions (ADR-lite): [memory-bank/decisions.md](memory-bank/decisions.md)
 
 Quickstart bootstrap
 - New machine minimal path:
   - Review [install_ansible.sh](install_ansible.sh) and [install_for_root.sh](install_for_root.sh).
-  - Run Ansible per [memory/ansible.md](memory/ansible.md) to achieve idempotent setup.
+  - Run Ansible per [memory-bank/ansible.md](memory-bank/ansible.md) to achieve idempotent setup.
   - Verify shell loads [zshrc](zshrc:1) and applies theme/plugins from [oh-my-zsh-custom/](oh-my-zsh-custom/).
 
 Update workflow for this memory bank
 - When adding or changing behavior, record:
-  - What changed in [memory/decisions.md](memory/decisions.md) (brief context and rationale).
+  - What changed in [memory-bank/decisions.md](memory-bank/decisions.md) (brief context and rationale).
   - Where it lives (link files like [zshrc](zshrc:1), [rc/](rc/), or [ansible/](ansible/)).
   - How to use it (update the relevant topic doc above).
 - Keep references workspace-relative and clickable, e.g. [zshrc](zshrc:1) or [ansible/README.md](ansible/README.md).
@@ -44,12 +45,6 @@ Conventions
 - Prefer portable shell and idempotent automation.
 - Keep links clickable and stable: [name](relative/path:line optional). Include a line anchor when linking to code blocks inside files like [zshrc](zshrc:1).
 
-Planned documents
-- This README intentionally links to documents that will be created next:
-  - [memory/repo-overview.md](memory/repo-overview.md): high-level directory map and Mermaid diagram.
-  - [memory/zsh-setup.md](memory/zsh-setup.md): oh-my-zsh, enhanced Agnoster theme "my_agnoster", plugins, and layering from [rc/](rc/) and [oh-my-zsh-custom/](oh-my-zsh-custom/).
-  - [memory/ansible.md](memory/ansible.md): playbooks and typical flows.
-  - [memory/ops-cheatsheet.md](memory/ops-cheatsheet.md): routine commands.
-  - [memory/conventions.md](memory/conventions.md): scripting and layout expectations.
-  - [memory/do-not-track.md](memory/do-not-track.md): policy and examples.
-  - [memory/decisions.md](memory/decisions.md): ADR-lite log.
+Current plugin set
+- `uv` is loaded on every platform.
+- `ssh-agent` is loaded lazily on non-macOS hosts only; macOS uses its system-managed agent.
